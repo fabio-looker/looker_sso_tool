@@ -1,0 +1,329 @@
+<!--
+
+
+*****************************************************************
+*****************************************************************
+**
+**
+**		Hi!
+**
+**		This is a tool, not an example.
+**		DO NOT send your embed secret to users' browsers
+**
+**		Really.
+**
+**		Don't.
+**
+**
+*****************************************************************
+*****************************************************************
+
+
+-->
+<html>
+<head>
+	<title>SSO Embed Constructor</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha256-KM512VNnjElC30ehFwehXjx1YCHPiQkOPmqnrWtpccM=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" integrity="sha256-rByPlHULObEjJ6XQxW/flG2r+22R5dKiAoef+aXWfik=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/themes/base/theme.min.css" integrity="sha256-vbQBfuBaoHN4AihkaCf4ba2w9vDrnpmiLahbYINNaa8=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/json-editor/0.7.28/jsoneditor.min.js" integrity="sha256-51+oMmpgSgS4jV5/DcGKnDHIOL6Jeie2i7ka6sPQVro=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.3/css/foundation.min.css" integrity="sha256-NTds7atVCDeolLUzbcl45lx4gJYO+hNXCaX1wC2HQHc=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/2.2.0/sha1.js" integrity="sha256-+wcjkt38O0q7BEzMX2Ivt0V9AGhx2jhuMtcdp5zHnGM=" crossorigin="anonymous"></script>
+<style>textarea{font-size:10pt !important;}</style>
+<script>//Just JSON Editor configuration and extensions....
+
+	// Set the default CSS theme and icon library globally
+	JSONEditor.defaults.theme = 'foundation5';
+	JSONEditor.defaults.iconlib = 'fontawesome4';
+
+JSONEditor.defaults.editors.splitStrings = JSONEditor.defaults.editors.string.extend({
+  getValue: function() {
+    var split_by, opt=this.options.split_by;
+    //Currently inferring split_by is regex, if in format "join_with|rest of regex", but could be explicit instead
+    if(opt && opt.match && opt.match(/(([^\^\\[$.|?*+(){]|\\.)*)(\|.+)+/)){
+      split_by=RegExp(opt);
+    }else if(opt){
+      split_by=opt;
+    }else{
+      split_by=/\s*,\s*/;
+    }
+    return this.value && this.value.split && this.value.split(split_by) || []
+  },
+  setValue: function(value,initial,from_template){
+    var join_with, opt=this.options.split_by;
+    //Currently inferring join_with from split_by, if in format "join_with|rest of regex", but could be explicit instead
+    var match=opt && opt.match && opt.match(/(([^\^\\[$.|?*+(){]|\\.)*)(\|.+)+/);
+    if(match && match[1]){
+        join_with=match[1].replace(/\\(.)/g,"$1");
+    }else if(opt){
+      join_with=opt;
+    }else{
+      join_with=", ";
+    }
+    return this._super(value.join?value.join(join_with):"", initial,from_template)  ;
+  }
+});
+JSONEditor.defaults.editors.splitNumbers = JSONEditor.defaults.editors.splitStrings.extend({
+  getValue: function() {
+    return this._super().map(function(str){return parseFloat(str);});
+  }
+});
+JSONEditor.defaults.editors.splitIntegers = JSONEditor.defaults.editors.splitStrings.extend({
+  getValue: function() {
+    return this._super().map(function(str){return parseFloat(str);});
+  }
+});
+// Specialized editors for arrays of strings
+JSONEditor.defaults.resolvers.unshift(function(schema) {
+  if(schema.type === "array" && schema.items && !(Array.isArray(schema.items)) && ['string','number','integer'].indexOf(schema.items.type) >= 0) {
+    //For quick lists via splitting the value of a text field
+    if(schema.format==="split"){
+      if(schema.items.type="string"){return 'splitStrings';}
+      if(schema.items.type="number"){return 'splitNumbers';}
+      if(schema.items.type="integer"){return 'splitIntegers';}
+    }
+    // For enumerated strings, number, or integers
+    if(schema.items.enum && schema.uniqueItems) {
+      return 'multiselect';
+    }
+    // For non-enumerated strings (tag editor)
+    else if(JSONEditor.plugins.selectize.enable && schema.items.type === "string" && schema.uniqueItems) {
+      return 'arraySelectize';
+    }
+  }
+});
+</script>
+</head>
+<body>
+	<div style="display:flex;height:1.5em;">
+		<input type="button" style="width:10vw;height:1.5em" value="Build..." id="start"/>
+		<input type="text" style="width:90vw;height:1.5em" readonly="readonly" id="url-display"/>
+	</div>
+	<iframe id="embed-iframe" style="width:100vw;height:90vh"></iframe>
+	<div id="dialog" style="display:none">
+		<form id="build-form">
+			<div id="json-editor"></div>
+			<div id="msg" style="white-space:pre-line;color:#333;background-color:#ddd"></div>
+			<div style="text-align:right">
+				<input type="submit" id="finish" style="margin-left:auto;margin-right:auto;border:solid 1px black" value="Go" class="button" />
+			</div>
+		</form>
+	</div>
+</body>
+<script>
+var definitions=[
+		{sort:{ui:01,qs:00,hash:00}, field:"embedSecret",schema:{"type":"string","title":"Embed Secret"}, hashSkip:true},
+		{sort:{ui:02,qs:00,hash:01}, field:"host",schema:{"type":"string","title":"Host"},noJSON:true},
+		{sort:{ui:03,qs:00,hash:02}, field:"embedPath",schema:{"type":"string","title":"Embed Path",/*"pattern":"^embed/"*/},
+				"auto":(path=>"/login/embed/"+encodeURIComponent(path)),
+				noJSON:true
+			},
+		{sort:{ui:00,qs:11,hash:11}, field:"nonce","auto":(()=>""||nonce(16)), qs:"nonce"},
+		{sort:{ui:00,qs:12,hash:12}, field:"time","auto":(()=>0||parseInt(Date.now()/1000)),qs:"time"},
+		{sort:{ui:11,qs:13,hash:13}, field:"sessionLength",schema:{"type":"number","title":"Session length (sec)"},qs:"session_length"},
+		{sort:{ui:04,qs:14,hash:14}, field:"externalUserId",schema:{"type":"string"},qs:"external_user_id"},
+		{sort:{ui:05,qs:31,hash:00}, field:"firstName",schema:{"type":"string"},hashSkip:true,qs:"first_name"},
+		{sort:{ui:06,qs:32,hash:00}, field:"lastName",schema:{"type":"string"},hashSkip:true,qs:"last_name"},
+		{sort:{ui:07,qs:21,hash:21}, field:"permissions",
+				schema:{"type":"array","uniqueItems":true,"items":{"type":"string","enum":[
+						"access_data",
+						"see_lookml_dashboards",
+						"see_looks",
+						"see_user_dashboards",
+						"explore",
+						"create_table_calculations",
+						"save_content",
+						"create_public_looks",
+						"send_outgoing_webhook",
+						"send_to_s3",
+						"schedule_look_emails",
+						"schedule_external_look_emails",
+						"download_with_limit",
+						"download_without_limit",
+						"see_lookml",
+						"develop",
+						"deploy",
+						"use_sql_runner",
+						"see_drill_overlay",
+						"manage_spaces",
+						"manage_models",
+						"create_prefetches",
+						"login_special_email",
+						"see_queries",
+						"see_logs",
+						"see_users",
+						"sudo",
+						"see_schedules",
+						"see_pdts"
+					]}},
+				qs:"permissions"
+			},
+		{sort:{ui:08,qs:22,hash:22}, field:"models",schema:{"type":"array","format":"split","items":{"type":"string"}},qs:"models"},
+		{sort:{ui:09,qs:00,hash:00}, field:"groupIds",schema:{"type":"array","format":"split","items":{"type":"string"}},"default":[],hashSkip:true},
+		{sort:{ui:10,qs:23,hash:23}, field:"accessFilters",schema:{"type":"array","format":"table","items":{"type":"object",
+				"properties":{
+						"model":{"type":"string"},
+						"field":{"type":"string"},
+						"value":{"type":"string"}
+					}}
+			},
+			"auto":(a=>a.reduce(objByOf(["model","field"],"value"),{})),
+			qs:"access_filters"},
+		{sort:{ui:12,qs:41,hash:00}, field:"forceLogoutLogin",schema:{"type":"boolean",format:"checkbox"},qs:"force_logout_login",hashSkip:true}
+	]
+var editor = new JSONEditor($("#json-editor")[0],{
+		schema: {
+				"type":"object",
+				"title":" ",
+				"properties":definitions
+						.filter(d=>d.schema)
+						.map(d=>set(d,"schema.propertyOrder",get(d,"sort.ui")))
+						.reduce(objByOf("field","schema"),{})
+			},
+		startval: JSON.parse(localStorage.getItem("json-val"))
+		,"required_by_default":true
+		,"disable_collapse":true
+		,"no_additional_properties":false
+	});
+editor.on('change',function() {
+		localStorage.setItem("json-val",JSON.stringify(editor.getValue()))
+	});
+//grrrrrrr...... Chrome is doing something annoying, can't seem to use patterns...
+//$("input").on("invalid",function(evt){
+//		evt.preventDefault();//
+//	})
+
+$("#start").click(loadModal)
+$(document).ready(loadModal)
+
+
+$("#url-display").focus(function(){
+		// Highlight all on select
+		// Solution per http://stackoverflow.com/a/24589806
+		$(this).on("click.a keyup.a", function(e){
+				$(this).off("click.a keyup.a").select();
+			});
+	});
+$("#url-display").on("keypress",function(evt){
+		if(evt.keyCode==13){
+				$("#embed-iframe")[0].src=this.value
+			}
+	})
+
+function loadModal(evt){
+		evt.preventDefault && evt.preventDefault();
+		var dialog=$("#dialog").dialog({
+				title:"SSO Embed Construction",
+				modal:true,
+				width:1020,
+				height:1040
+			});
+
+		$("#build-form").off()
+		$("#build-form").on("submit",function(evt){
+				evt.preventDefault();
+				$("#msg").hide();
+				var errs=editor.validate();
+				if(errs.length){
+						$("#msg")
+						.text(errs.map(e=>e.path+": "+e.message).join("\n"))
+						.show()
+						return;
+					}
+				var editorValue=editor.getValue()
+				//window.editorValue=editorValue;
+				var definitionValues=
+						definitions
+						.map(d=>({d:d,val:d.default || ""}))
+						.map(({d,val})=>({d:d,val:
+								editorValue[d.field]!==undefined && editorValue[d.field]!==""
+										? editorValue[d.field]
+										: val
+							}))
+						.map(({d,val})=>({d:d,val:
+								d.auto?d.auto(val):val
+							}))
+						.map(({d,val})=>({d:d,val:
+								d.noJSON?val:JSON.stringify(val)
+							}))
+				var valuesByField=definitionValues.reduce(objByOf("d.field","val"),{})
+				//App specific logic
+				var hashContent=definitionValues
+						.filter(dv=>!dv.d.hashSkip)
+						.sort(sorter("d.sort.hash"))
+						.map(dv=>dv.val)
+						.join("\n")
+					;
+				var shaObj;
+				var signature=(
+						// Did you read the note at the top of the file???
+						shaObj=new jsSHA("SHA-1", "TEXT"),
+						shaObj.setHMACKey(editorValue.embedSecret,"TEXT"),
+						//Based on the format of the secret, you would think Hex...
+						shaObj.update(hashContent),
+						shaObj.getHMAC("B64")
+					);
+				//console.log(signature)
+				var url=("https://"
+						+ valuesByField.host
+						+ valuesByField.embedPath
+						+ "?"
+						+ definitionValues
+								.filter(dv=>dv.d.qs)
+								.sort(sorter("d.sort.qs"))
+								.map(dv=>encodeURIComponent(dv.d.qs)+"="+encodeURIComponent(dv.val))
+								.join("&")
+						+ "&signature=" + encodeURIComponent(signature)
+					);
+				//console.log(url)
+				$("#url-display").val(url)
+				$("#embed-iframe")[0].src=url
+				$("#dialog").dialog("close")
+			})
+	}
+
+function set(obj,path,val){
+		if(path.split){path=path.split('.')}
+		var head=path[0];
+		if(path.length==1){
+				obj[head]=val
+			}else{
+				obj[head]=obj[head]||{};
+				set(obj[head],path.slice(1),val)
+			}
+		return obj;
+	}
+function get(obj,path){
+		if(path.split){path=path.split('.')}
+		var head=path[0];
+		if(path.length==1){
+				return obj && obj[head];
+			}else{
+				return get(obj[head],path.slice(1))
+			}
+	}
+
+function objByOf(byKeys,ofKey){
+		byKeys=(byKeys instanceof Array ? byKeys : [byKeys])
+		return function(accum,x,i){
+				return set(accum,byKeys.map(k=>get(x,k)),ofKey?get(x,ofKey):x)
+			}
+	}
+function sorter(path){
+		return function(a,b){
+				return get(a,path)-get(b,path)
+			}
+	}
+
+function nonce(len) {
+		var text = "";
+		var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+		for (var i = 0; i < len; i++){
+				text += possible.charAt(Math.floor(Math.random() * possible.length));
+			}
+		return text;
+	}
+</script>
+</html>

@@ -72,7 +72,7 @@ JSONEditor.defaults.editors.splitNumbers = JSONEditor.defaults.editors.splitStri
 });
 JSONEditor.defaults.editors.splitIntegers = JSONEditor.defaults.editors.splitStrings.extend({
   getValue: function() {
-    return this._super().map(function(str){return parseFloat(str);});
+    return this._super().map(function(str){return parseInt(str);});
   }
 });
 // Specialized editors for arrays of strings
@@ -161,8 +161,10 @@ var definitions=[
 				qs:"permissions"
 			},
 		{sort:{ui:08,qs:22,hash:22}, field:"models",schema:{"type":"array","format":"split","items":{"type":"string"}},qs:"models"},
-		{sort:{ui:09,qs:00,hash:00}, field:"groupIds",schema:{"type":"array","format":"split","items":{"type":"string"}},"default":[],hashSkip:true},
-		{sort:{ui:10,qs:23,hash:23}, field:"accessFilters",schema:{"type":"array","format":"table","items":{"type":"object",
+		{sort:{ui:09,qs:23,hash:23}, field:"groupIds",schema:{"type":"array","format":"split","items":{"type":"string"}},
+				"default":[],"auto":((a)=>a.map(s=>parseInt(s))),qs:"group_ids"
+			},
+		{sort:{ui:10,qs:24,hash:24}, field:"accessFilters",schema:{"type":"array","format":"table","items":{"type":"object",
 				"properties":{
 						"model":{"type":"string"},
 						"field":{"type":"string"},

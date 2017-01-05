@@ -175,13 +175,14 @@ var definitions=[
 			qs:"access_filters"},
 		{sort:{ui:12,qs:41,hash:00}, field:"forceLogoutLogin",schema:{"type":"boolean",format:"checkbox"},qs:"force_logout_login",hashSkip:true}
 	]
+	.map(d=>set(d,"schema.propertyOrder",get(d,"sort.ui")))
+	
 var editor = new JSONEditor($("#json-editor")[0],{
 		schema: {
 				"type":"object",
 				"title":" ",
 				"properties":definitions
 						.filter(d=>d.schema)
-						.map(d=>set(d,"schema.propertyOrder",get(d,"sort.ui")))
 						.reduce(objByOf("field","schema"),{})
 			},
 		startval: JSON.parse(localStorage.getItem("json-val"))

@@ -131,7 +131,6 @@ var editorDef= {
 		,"disable_collapse":true
 		//,"no_additional_properties":false
 	}
-console.log(editorDef)
 var editor = new JSONEditor($("#json-editor")[0],editorDef);
 editor.on('change',function() {
 		localStorage.setItem("json-val",JSON.stringify(editor.getValue()))

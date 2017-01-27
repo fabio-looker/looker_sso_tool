@@ -102,7 +102,7 @@ var definitions=[
 					]}}
 			},
 		{sort:{ui:08,qs:22,hash:22}, id:"models",schema:{pattern:"^[A-Za-z0-9_]+(,\s*[A-Za-z0-9_]+)*$"},fn:(s)=>s.split(/,\s*/)},
-		{sort:{ui:09,qs:23,hash:23}, id:"group_ids",schema:{pattern:"^[0-9_]+(,\s*[0-9]+)*$"},fn:(s)=>s.split(/,\s*/).map(s=>parseInt(s))},
+		{sort:{ui:09,qs:23,hash:23}, id:"group_ids",schema:{pattern:"^$|^[0-9]+(,\s*[0-9]+)*$"},fn:(s)=>s.split(/,\s*/).map(s=>parseInt(s))},
 		{sort:{ui:10,qs:24,hash:24}, id:"access_filters",schema:{type:"array",format:"table",items:{type:"object",
 				properties:{
 						model:{type:"string"},
@@ -118,19 +118,21 @@ var definitions=[
 	.map(d=>set(d,"schema.propertyOrder",get(d,"sort.ui")))
 	.map(d=>set(d,"schema.title",autoLabel(d.id)))
 	
-var editor = new JSONEditor($("#json-editor")[0],{
+var editorDef= {
 		schema: {
 				type:"object",
 				title:" ",
 				properties:definitions
 						.filter(d => d.sort.ui)
-						.reduce(objByOf("field","schema"),{})
+						.reduce(objByOf("id","schema"),{})
 			},
 		startval: JSON.parse(localStorage.getItem("json-val"))
 		,"required_by_default":true
 		,"disable_collapse":true
-		,"no_additional_properties":false
-	});
+		//,"no_additional_properties":false
+	}
+console.log(editorDef)
+var editor = new JSONEditor($("#json-editor")[0],editorDef);
 editor.on('change',function() {
 		localStorage.setItem("json-val",JSON.stringify(editor.getValue()))
 	});
@@ -204,15 +206,15 @@ function loadModal(evt){
 				var signature=(
 						// Did you read the note at the top of the file???
 						shaObj=new jsSHA("SHA-1", "TEXT"),
-						shaObj.setHMACKey(editorValue.embedSecret,"TEXT"),
+						shaObj.setHMACKey(editorValue.embed_secret,"TEXT"),
 						//Based on the format of the secret, you would think Hex...
 						shaObj.update(hashContent),
 						shaObj.getHMAC("B64")
 					);
 				//console.log(signature)
 				var url=("https://"
-						+ valuesByField.host
-						+ valuesByField.embedPath
+						+ valuesById.host
+						+ valuesById.embed_path
 						+ "?"
 						+ definitionValues
 								.filter(dv=>dv.d.sort.qs)
@@ -270,7 +272,7 @@ function nonce(len) {
 		return text;
 	}
 function autoLabel(name){
-		.replace(/(^|_)([a-z])/g,s=>s.toUpperCase()).replace(/_/g," ")
+		return name.replace(/(^|_)([a-z])/g,s=>s.toUpperCase()).replace(/_/g," ")
 	}
 </script>
 </html>

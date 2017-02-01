@@ -102,7 +102,7 @@ var definitions=[
 					]}}
 			},
 		{sort:{ui:08,qs:22,hash:22}, id:"models",schema:{pattern:"^[A-Za-z0-9_]+(,\s*[A-Za-z0-9_]+)*$"},fn:(s)=>s.split(/,\s*/)},
-		{sort:{ui:09,qs:23,hash:23}, id:"group_ids",schema:{pattern:"^$|^[0-9]+(,\s*[0-9]+)*$"},fn:(s)=>(s==""?"":s.split(/,\s*/).map(s=>parseInt(s)))},
+		{sort:{ui:09,qs:23,hash:23}, id:"group_ids",schema:{pattern:"^$|^[0-9]+(,\s*[0-9]+)*$"},fn:(s)=>(s==""?[]:s.split(/,\s*/).map(s=>parseInt(s)))},
 		{sort:{ui:10,qs:24,hash:24}, id:"access_filters",schema:{type:"array",format:"table",items:{type:"object",
 				properties:{
 						model:{type:"string"},

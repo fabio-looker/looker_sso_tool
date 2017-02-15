@@ -49,7 +49,13 @@
 			<div id="json-editor"></div>
 			<div id="msg" style="white-space:pre-line;color:#333;background-color:#ddd"></div>
 			<div style="text-align:right">
-				<input type="submit" id="finish" style="margin-left:auto;margin-right:auto;border:solid 1px black" value="Go" class="button" />
+				<div style="display:inline-block;vertical-align:top;">
+					<div><label for="embed-flag">Embed</label></div>
+					<div><input id="embed-flag" type="checkbox" checked="checked" /></div>
+				</div>
+				<div  style="display:inline-block;vertical-align:top;margin: 0 2em;">
+					<input type="submit" style="margin-left:auto;margin-right:auto;border:solid 1px black" value="Go" class="button" />
+				</div>
 			</div>
 		</form>
 	</div>
@@ -111,6 +117,7 @@ var definitions=[
 					}}
 			},
 			fn:(a=>a.reduce(objByOf(["model","field"],"value"),{}))},
+		//{sort:{ui:11,qs:25,hash:25}, id:"external_group_id"},
 		{sort:{ui:12,qs:41,hash:00}, id:"force_logout_login",schema:{type:"boolean",format:"checkbox"}}
 	]
 	.map(d=>set(d,"schema",get(d,"schema")||{}))
@@ -194,6 +201,7 @@ function loadModal(evt){
 								d.noJSON?val:JSON.stringify(val)
 							}))
 				var valuesById=definitionValues.reduce(objByOf("d.id","val"),{})
+				console.log("Values:",valuesById)
 				//App specific logic
 				var hashContent=definitionValues
 						.filter(dv=>dv.d.sort.hash)
@@ -210,7 +218,7 @@ function loadModal(evt){
 						shaObj.update(hashContent),
 						shaObj.getHMAC("B64")
 					);
-				//console.log(signature)
+				console.log("Signature:",signature)
 				var url=("https://"
 						+ valuesById.host
 						+ valuesById.embed_path
@@ -222,9 +230,11 @@ function loadModal(evt){
 								.join("&")
 						+ "&signature=" + encodeURIComponent(signature)
 					);
-				//console.log(url)
+				//console.log("Url:",url)
 				$("#url-display").val(url)
-				$("#embed-iframe")[0].src=url
+				if($("#embed-flag")[0].checked){
+						$("#embed-iframe")[0].src=url
+					}
 				$("#dialog").dialog("close")
 			})
 	}

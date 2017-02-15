@@ -109,7 +109,8 @@ var definitions=[
 			},
 		{sort:{ui:08,qs:22,hash:22}, id:"models",schema:{pattern:"^[A-Za-z0-9_]+(,\s*[A-Za-z0-9_]+)*$"},fn:(s)=>s.split(/,\s*/)},
 		{sort:{ui:09,qs:23,hash:23}, id:"group_ids",schema:{pattern:"^$|^[0-9]+(,\s*[0-9]+)*$"},fn:(s)=>(s==""?[]:s.split(/,\s*/).map(s=>parseInt(s)))},
-		{sort:{ui:10,qs:24,hash:24}, id:"access_filters",schema:{type:"array",format:"table",items:{type:"object",
+		{sort:{ui:11,qs:24,hash:24}, id:"external_group_id"},
+		{sort:{ui:10,qs:25,hash:25}, id:"access_filters",schema:{type:"array",format:"table",items:{type:"object",
 				properties:{
 						model:{type:"string"},
 						field:{type:"string"},
@@ -117,7 +118,6 @@ var definitions=[
 					}}
 			},
 			fn:(a=>a.reduce(objByOf(["model","field"],"value"),{}))},
-		//{sort:{ui:11,qs:25,hash:25}, id:"external_group_id"},
 		{sort:{ui:12,qs:41,hash:00}, id:"force_logout_login",schema:{type:"boolean",format:"checkbox"}}
 	]
 	.map(d=>set(d,"schema",get(d,"schema")||{}))

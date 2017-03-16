@@ -1,0 +1,15 @@
+
+TODO:
+1. Update permissions list for 4.8
+
+2. Path builder
+- Content types: spaces/looks/LookML dashboards/UDD dashboards/explore
+- Filter querystring
+- Misc querystring
+hide_title=true
+run=1
+embed domain
+
+3. Once CORS enabled for API, add discovery of:
+- Paths
+-

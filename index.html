@@ -61,21 +61,98 @@
 	</div>
 </body>
 <script>
-var definitions=[
-		{sort:{ui:01,qs:00,hash:00}, id:"embed_secret"},
-		{sort:{ui:02,qs:00,hash:01}, id:"host",noJSON:true},
-		{sort:{ui:03,qs:00,hash:02}, id:"embed_path",
-				fn:(path=>"/login/embed/"+encodeURIComponent(path)),
-				noJSON:true
+var pathSchema = {type:"string",required:true}
+/* TODO write toString for this "Path Builder" schema
+		{title:"Path",required:true,oneOf:[
+		{title:"Manual path",type:"string"},
+		{title:"Space",
+				type:"object",
+				options:{"no_additional_properties":true},
+				properties:{
+						"id":{title:"Space ID",type:"number"},
+						"querystring":{
+								type:"object",title:"Querystring parameters",
+								options:{disable_properties:false,no_additional_properties:false},
+								properties:{
+										"embed_domain":{required:false,type:"string",pattern:"^https?://[-.a-zA-Z0-9]$"}
+									}
+							}	
+					}
 			},
-		{sort:{ui:00,qs:11,hash:11}, id:"nonce",fn:(()=>""||nonce(16))},
-		{sort:{ui:00,qs:12,hash:12}, id:"time",fn:(()=>0||parseInt(Date.now()/1000)),qs:"time"},
-		{sort:{ui:11,qs:13,hash:13}, id:"session_length",schema:{type:"number"}},
-		{sort:{ui:04,qs:14,hash:14}, id:"external_user_id"},
-		{sort:{ui:05,qs:31,hash:00}, id:"first_name"},
-		{sort:{ui:06,qs:32,hash:00}, id:"last_name"},
-		{sort:{ui:07,qs:21,hash:21}, id:"permissions",
-				schema:{type:"array",uniqueItems:true,items:{type:"string",enum:[
+		{title:"Look",
+				type:"object",
+				options:{"no_additional_properties":true},
+				properties:{
+						"id":{title:"Look ID",type:"number"},
+						"querystring":{
+								type:"object",title:"Querystring parameters",
+								options:{disable_properties:false,no_additional_properties:false},
+								properties:{
+										"embed_domain":{required:false,type:"string",pattern:"^https?://[-.a-zA-Z0-9]$"}
+									}
+							}	
+					}
+			},
+		{title:"UDD dashboard",
+				type:"object",
+				options:{"no_additional_properties":true},
+				properties:{
+						"id":{title:"Dashboard ID",type:"number"},
+						"querystring":{
+								type:"object",title:"Querystring parameters",
+								options:{disable_properties:false,no_additional_properties:false},
+								properties:{
+										"embed_domain":{required:false,type:"string",pattern:"^https?://[-.a-zA-Z0-9]$"}
+									}
+							}	
+					}
+			},
+		{title:"LookML dashboard",
+				type:"object",
+				format:"compact",
+				options:{"no_additional_properties":true},
+				properties:{
+						"model":{title:"Model name",type:"string"},
+						"dashboard":{title:"Dashboard name",type:"string"},
+						"querystring":{
+								type:"object",title:"Querystring parameters",
+								options:{disable_properties:false,no_additional_properties:false},
+								properties:{
+										"embed_domain":{required:false,type:"string",pattern:"^https?://[-.a-zA-Z0-9]$"}
+									}
+							}	
+					}
+			},
+		{title:"Explore",
+				type:"object",
+				properties:{
+						"model":{title:"Model name",type:"string"},
+						"explore":{title:"Explore name",type:"string"},
+						"querystring":{
+								type:"object",title:"Querystring parameters",
+								options:{disable_properties:false,no_additional_properties:false},
+								properties:{
+										"embed_domain":{required:false,type:"string",pattern:"^https?://[-.a-zA-Z0-9]$"}
+									}
+							}	
+					}
+			}
+	]} */
+				
+var definitions=[
+		{sort:{ui:01,qs:00,hash:00}, id:"embed_secret", schema:{required:true}},
+		{sort:{ui:02,qs:00,hash:01}, id:"host", schema:{required:true}, noJSON:true},
+		{sort:{ui:03,qs:00,hash:02}, id:"embed_path", schema:pathSchema, noJSON:true,
+				fn:(path=>"/login/embed/"+encodeURIComponent(path))
+			},
+		{sort:{ui:98,qs:11,hash:03}, id:"nonce",schema:{required:false},fn:(x=>x||nonce(16))},
+		{sort:{ui:99,qs:12,hash:04}, id:"time",schema:{required:false},fn:(x=>x||parseInt(Date.now()/1000))},
+		{sort:{ui:90,qs:13,hash:05}, id:"session_length", schema:{required:true,type:"number",minimum:1}},
+		{sort:{ui:04,qs:14,hash:06}, id:"external_user_id", schema:{required:true}},
+		{sort:{ui:05,qs:31,hash:00}, id:"first_name", schema:{required:true}},
+		{sort:{ui:06,qs:32,hash:00}, id:"last_name", schema:{required:true}},
+		{sort:{ui:07,qs:21,hash:07}, id:"permissions",
+				schema:{type:"array",required:true,uniqueItems:true,items:{type:"string",enum:[
 						"access_data",
 						"see_looks",
 						"see_user_dashboards",
@@ -96,36 +173,58 @@ var definitions=[
 						/* FYI - SSO does not allow all permissions. If you add unsupported permissions, they will fail silently */
 					]}}
 			},
-		{sort:{ui:08,qs:22,hash:22}, id:"models",schema:{pattern:"^[A-Za-z0-9_]+(,\\s*[A-Za-z0-9_]+)*$"},fn:(s)=>s.split(/,\s*/)},
-		{sort:{ui:09,qs:23,hash:23}, id:"group_ids",schema:{pattern:"^$|^[0-9]+(,\\s*[0-9]+)*$"},fn:(s)=>(s==""?[]:s.split(/,\s*/).map(s=>parseInt(s)))},
-		{sort:{ui:11,qs:24,hash:24}, id:"external_group_id"},
-		{sort:{ui:10,qs:25,hash:25}, id:"access_filters",schema:{type:"array",format:"table",items:{type:"object",
+		{sort:{ui:08,qs:22,hash:08}, id:"models",schema:{required:true,pattern:"^[A-Za-z0-9_]+(,\\s*[A-Za-z0-9_]+)*$"},fn:(s)=>s.split(/,\s*/)},
+		{sort:{ui:09,qs:23,hash:09}, id:"group_ids",schema:{required:false,pattern:"^$|^[0-9]+(,\\s*[0-9]+)*$"},fn:(s)=>(s==""?[]:s.split(/,\s*/).map(s=>parseInt(s)))},
+		{sort:{ui:10,qs:24,hash:10}, id:"external_group_id",schema:{required:false},fn:x=>x||""},
+		/*{sort:{ui:11,qs:25,hash:11}, id:"user_attributes",schema:{type:"array",format:"table",items:{type:"object",
+					properties:{
+							field:{type:"string"},
+							value:{type:"string"}
+						}}
+				},
+				fn:(a=>a.reduce(objByOf(["field"],"value"),{}))},*/
+		{sort:{ui:12,qs:26,hash:12}, id:"access_filters",schema:{type:"array",required:false,format:"table",items:{type:"object",
 				properties:{
 						model:{type:"string"},
 						field:{type:"string"},
 						value:{type:"string"}
 					}}
 			},
-			fn:(a=>a.reduce(objByOf(["model","field"],"value"),{}))},
-		{sort:{ui:12,qs:41,hash:00}, id:"force_logout_login",schema:{type:"boolean",format:"checkbox"}}
+			fn:(a=>(a||[]).reduce(objByOf(["model","field"],"value"),{}))},
+
+		{sort:{ui:91,qs:41,hash:00}, id:"force_logout_login",schema:{type:"boolean",required:true,format:"checkbox"}}
 	]
-	.map(d=>set(d,"schema",get(d,"schema")||{}))
-	.map(d=>set(d,"schema.type",get(d,"schema.type")||"string"))
+	//.map(d=>set(d,"schema",get(d,"schema")||{}))
+	.map(d=>set(d,"schema.type",get(d,"schema.type")||(get(d,"schema.oneOf")?undefined:"string")))
 	.map(d=>set(d,"schema.propertyOrder",get(d,"sort.ui")))
 	.map(d=>set(d,"schema.title",autoLabel(d.id)))
-	
+
+var initialValue={
+		"embed_path":"/embed/looks/1",
+		"session_length":600,
+		"external_user_id":"test-id-123",
+		"first_name":"Testy",
+		"last_name":"McTestFace",
+		"permissions":["access_data","see_looks"],
+		"force_logout_login":true
+	}
+
 var editorDef= {
 		schema: {
 				type:"object",
 				title:" ",
+				options:{"disable_edit_json":false,"disable_properties":false,"remove_empty_properties":true},
 				properties:definitions
 						.filter(d => d.sort.ui)
 						.reduce(objByOf("id","schema"),{})
 			},
-		startval: JSON.parse(localStorage.getItem("json-val"))
-		,"required_by_default":true
-		,"disable_collapse":true
-		//,"no_additional_properties":false
+		startval: tryLocalStorageGet("json-val",initialValue),
+		//"required_by_default":true,
+		"disable_collapse":true,
+		"disable_properties":true,
+		"display_required_only":true,
+		"keep_oneof_values":true,
+		"disable_edit_json":true
 	}
 var editor = new JSONEditor($("#json-editor")[0],editorDef);
 editor.on('change',function() {
@@ -271,6 +370,20 @@ function nonce(len) {
 	}
 function autoLabel(name){
 		return name.replace(/(^|_)([a-z])/g,s=>s.toUpperCase()).replace(/_/g," ")
+	}
+	
+function pathBuilderObjectToString(obj){
+	
+	
+	
+	
+	}
+function tryLocalStorageGet(key,defaultVal){
+		try{
+				return JSON.parse(localStorage.getItem(key))||defaultVal
+			}catch(e){
+				return defaultVal
+			}
 	}
 </script>
 </html>

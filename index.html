@@ -170,19 +170,19 @@ var definitions=[
 						"send_to_s3",
 						"send_outgoing_webhook",
 						"see_sql" /* v4.10 */
-						/* FYI - SSO does not allow all permissions. If you add unsupported permissions, they will fail silently */
+						/* FYI - SSO does not allow all permissions. If you add unsupported permissions, they will fail  */
 					]}}
 			},
 		{sort:{ui:08,qs:22,hash:08}, id:"models",schema:{required:true,pattern:"^[A-Za-z0-9_]+(,\\s*[A-Za-z0-9_]+)*$"},fn:(s)=>s.split(/,\s*/)},
 		{sort:{ui:09,qs:23,hash:09}, id:"group_ids",schema:{required:false,pattern:"^$|^[0-9]+(,\\s*[0-9]+)*$"},fn:(s)=>(s==""?[]:s.split(/,\s*/).map(s=>parseInt(s)))},
 		{sort:{ui:10,qs:24,hash:10}, id:"external_group_id",schema:{required:false},fn:x=>x||""},
-		/*{sort:{ui:11,qs:25,hash:11}, id:"user_attributes",schema:{type:"array",format:"table",items:{type:"object",
+		{sort:{ui:11,qs:25,hash:11}, id:"user_attributes",schema:{required:false,type:"array",format:"table",items:{type:"object",
 					properties:{
 							field:{type:"string"},
 							value:{type:"string"}
 						}}
 				},
-				fn:(a=>a.reduce(objByOf(["field"],"value"),{}))},*/
+				fn:(a=>(a||[]).reduce(objByOf(["field"],"value"),{}))},
 		{sort:{ui:12,qs:26,hash:12}, id:"access_filters",schema:{type:"array",required:false,format:"table",items:{type:"object",
 				properties:{
 						model:{type:"string"},

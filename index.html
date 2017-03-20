@@ -35,7 +35,11 @@
 	JSONEditor.defaults.iconlib = 'fontawesome4';
 </script>
 </head>
-<body style="display:flex; justify-content: space-around">
+<body>
+<div id="panel-toggle" style="height:2em;width:2em;position:fixed;left:-1px;bottom:-1px;z-index:20;text-align:center;background-color:#DDD;color:#333;border:1px solid #666;cursor:pointer;">
+	<i class="fa fa-eye-slash"></i>
+</div>
+<div style="display:flex; justify-content: space-around">
 	<div id="build-panel" style="flex-grow:1;min-width:480px;margin:0 25px">
 		<form id="build-form">
 			<div id="json-editor"></div>
@@ -66,6 +70,7 @@
 		<h2>Embed Preview</h2>
 		<iframe id="embed-iframe" style="width:100%;height:480px"></iframe>
 	</div>
+</div>
 </body>
 <script>
 var pathSchema = {type:"string",required:true}
@@ -241,6 +246,8 @@ editor.on('change',function() {
 //$("input").on("invalid",function(evt){
 //		evt.preventDefault();//
 //	})
+
+$("#panel-toggle").click(function(){$("#build-panel").toggle()})
 
 $("#url-display").focus(function(){
 		// Highlight all on select

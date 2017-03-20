@@ -312,7 +312,7 @@ $("#build-form").on("submit",function(evt){
 				+ "?"
 				+ definitionValues
 						.filter(dv=>dv.d.sort.qs)
-						.sort(sorter("d.sort.qs"))
+						//.sort(sorter("d.sort.qs")) //Not required, but nice for consistency
 						.map(dv=>encodeURIComponent(dv.d.id)+"="+encodeURIComponent(dv.val))
 						.join("&")
 				+ "&signature=" + encodeURIComponent(signature)
@@ -322,7 +322,6 @@ $("#build-form").on("submit",function(evt){
 		if($("#embed-flag")[0].checked){
 				$("#embed-iframe")[0].src=url
 			}
-		$("#dialog").dialog("close")
 	})
 
 //Just functions below

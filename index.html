@@ -24,9 +24,6 @@
 <head>
 	<title>SSO Embed Constructor</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha256-KM512VNnjElC30ehFwehXjx1YCHPiQkOPmqnrWtpccM=" crossorigin="anonymous"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" integrity="sha256-rByPlHULObEjJ6XQxW/flG2r+22R5dKiAoef+aXWfik=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/themes/base/theme.min.css" integrity="sha256-vbQBfuBaoHN4AihkaCf4ba2w9vDrnpmiLahbYINNaa8=" crossorigin="anonymous" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/json-editor/0.7.28/jsoneditor.min.js" integrity="sha256-51+oMmpgSgS4jV5/DcGKnDHIOL6Jeie2i7ka6sPQVro=" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.3/css/foundation.min.css" integrity="sha256-NTds7atVCDeolLUzbcl45lx4gJYO+hNXCaX1wC2HQHc=" crossorigin="anonymous" />
@@ -38,16 +35,11 @@
 	JSONEditor.defaults.iconlib = 'fontawesome4';
 </script>
 </head>
-<body>
-	<div style="display:flex;height:1.5em;">
-		<input type="button" style="width:10vw;height:1.5em" value="Build..." id="start"/>
-		<input type="text" style="width:90vw;height:1.5em" readonly="readonly" id="url-display"/>
-	</div>
-	<iframe id="embed-iframe" style="width:100vw;height:90vh"></iframe>
-	<div id="dialog" style="display:none">
+<body style="display:flex; justify-content: space-around">
+	<div id="build-panel" style="flex-grow:1;min-width:480px;margin:0 25px">
 		<form id="build-form">
 			<div id="json-editor"></div>
-			<div id="msg" style="white-space:pre-line;color:#333;background-color:#ddd"></div>
+			<div id="msg" style="white-space:pre-line;color:#333;background-color:#DDB"></div>
 			<div style="text-align:right">
 				<div style="display:inline-block;vertical-align:top;">
 					<div><label for="embed-flag">Embed</label></div>
@@ -58,6 +50,21 @@
 				</div>
 			</div>
 		</form>
+	</div>
+	<div style="flex-grow:1;min-width:480px;margin:0 25px">
+		<h2>Tips</h2>
+		<ul style="font-size:0.8em; font-family:serif; color:#333;">
+			<li> This is for demo/understanding only. You should never make the embed secret available to a user's browser.</li>
+			<li> Check the properties button for additional parameters you can configure</li>
+			<li> The form state is persisted when you close this page (Use non-incognito mode)</li>
+			<li> The force_logout_login parameter will cause the embed to either use your existing Looker session, or force a new one (thus logging you out), so use incognito mode to test if you are also logged into Looker</li>
+			<li> Use the JSON button to copy the form state into another page (i.e. from non-incognito into an incognito tab)</li>
+			<li> If you want to use the Embed URI Validator in Looker, embedding here will consume the nonce and caused the URL to be invalid. Uncheck the "Embed" checkbox at the bottom to not embed after building the URL.</li>
+		</ul>
+		<h2>Built URL</h2>
+		<textarea style="width:90%;height:12em" readonly="readonly" id="url-display"></textarea>
+		<h2>Embed Preview</h2>
+		<iframe id="embed-iframe" style="width:100%;height:480px"></iframe>
 	</div>
 </body>
 <script>
@@ -212,7 +219,7 @@ var initialValue={
 var editorDef= {
 		schema: {
 				type:"object",
-				title:" ",
+				title:"SSO Embed Builder",
 				options:{"disable_edit_json":false,"disable_properties":false,"remove_empty_properties":true},
 				properties:definitions
 						.filter(d => d.sort.ui)
@@ -230,14 +237,10 @@ var editor = new JSONEditor($("#json-editor")[0],editorDef);
 editor.on('change',function() {
 		localStorage.setItem("json-val",JSON.stringify(editor.getValue()))
 	});
-//grrrrrrr...... Chrome is doing something annoying, can't seem to use patterns...
+//grrrrrrr...... Chrome is doing something annoying...
 //$("input").on("invalid",function(evt){
 //		evt.preventDefault();//
 //	})
-
-$("#start").click(loadModal)
-$(document).ready(loadModal)
-
 
 $("#url-display").focus(function(){
 		// Highlight all on select
@@ -252,80 +255,70 @@ $("#url-display").on("keypress",function(evt){
 			}
 	})
 
-function loadModal(evt){
-		evt.preventDefault && evt.preventDefault();
-		var dialog=$("#dialog").dialog({
-				title:"SSO Embed Construction",
-				modal:true,
-				width:1020,
-				height:1040
-			});
+$("#build-form").on("submit",function(evt){
+		evt.preventDefault();
+		$("#msg").hide();
+		var errs=editor.validate();
+		if(errs.length){
+				$("#msg")
+				.text(errs.map(e=>e.path+": "+e.message).join("\n"))
+				.show()
+				return;
+			}
+		var editorValue=editor.getValue()
+		var definitionValues=
+				definitions
+				.map(d=>({d:d,val:d.default || ""}))
+				.map(({d,val})=>({d:d,val:
+						editorValue[d.id]!==undefined && editorValue[d.id]!==""
+								? editorValue[d.id]
+								: val
+					}))
+				.map(({d,val})=>({d:d,val:
+						d.fn?d.fn(val):val
+					}))
+				.map(({d,val})=>({d:d,val:
+						d.noJSON?val:JSON.stringify(val)
+					}))
+		var valuesById=definitionValues.reduce(objByOf("d.id","val"),{})
+		console.log("Values:",valuesById)
+		//App specific logic
+		var hashContent=definitionValues
+				.filter(dv=>dv.d.sort.hash)
+				.sort(sorter("d.sort.hash"))
+				.map(dv=>dv.val)
+				.join("\n")
+			;
+		var shaObj;
+		var signature=(
+				// Did you read the note at the top of the file???
+				shaObj=new jsSHA("SHA-1", "TEXT"),
+				shaObj.setHMACKey(editorValue.embed_secret,"TEXT"),
+				//Based on the format of the secret, you would think Hex...
+				shaObj.update(hashContent),
+				shaObj.getHMAC("B64")
+			);
+		console.log("Signature:",signature)
+		var url=("https://"
+				+ valuesById.host
+				+ valuesById.embed_path
+				+ "?"
+				+ definitionValues
+						.filter(dv=>dv.d.sort.qs)
+						.sort(sorter("d.sort.qs"))
+						.map(dv=>encodeURIComponent(dv.d.id)+"="+encodeURIComponent(dv.val))
+						.join("&")
+				+ "&signature=" + encodeURIComponent(signature)
+			);
+		//console.log("Url:",url)
+		$("#url-display").val(url)
+		if($("#embed-flag")[0].checked){
+				$("#embed-iframe")[0].src=url
+			}
+		$("#dialog").dialog("close")
+	})
 
-		$("#build-form").off()
-		$("#build-form").on("submit",function(evt){
-				evt.preventDefault();
-				$("#msg").hide();
-				var errs=editor.validate();
-				if(errs.length){
-						$("#msg")
-						.text(errs.map(e=>e.path+": "+e.message).join("\n"))
-						.show()
-						return;
-					}
-				var editorValue=editor.getValue()
-				//window.editorValue=editorValue;
-				var definitionValues=
-						definitions
-						.map(d=>({d:d,val:d.default || ""}))
-						.map(({d,val})=>({d:d,val:
-								editorValue[d.id]!==undefined && editorValue[d.id]!==""
-										? editorValue[d.id]
-										: val
-							}))
-						.map(({d,val})=>({d:d,val:
-								d.fn?d.fn(val):val
-							}))
-						.map(({d,val})=>({d:d,val:
-								d.noJSON?val:JSON.stringify(val)
-							}))
-				var valuesById=definitionValues.reduce(objByOf("d.id","val"),{})
-				console.log("Values:",valuesById)
-				//App specific logic
-				var hashContent=definitionValues
-						.filter(dv=>dv.d.sort.hash)
-						.sort(sorter("d.sort.hash"))
-						.map(dv=>dv.val)
-						.join("\n")
-					;
-				var shaObj;
-				var signature=(
-						// Did you read the note at the top of the file???
-						shaObj=new jsSHA("SHA-1", "TEXT"),
-						shaObj.setHMACKey(editorValue.embed_secret,"TEXT"),
-						//Based on the format of the secret, you would think Hex...
-						shaObj.update(hashContent),
-						shaObj.getHMAC("B64")
-					);
-				console.log("Signature:",signature)
-				var url=("https://"
-						+ valuesById.host
-						+ valuesById.embed_path
-						+ "?"
-						+ definitionValues
-								.filter(dv=>dv.d.sort.qs)
-								.sort(sorter("d.sort.qs"))
-								.map(dv=>encodeURIComponent(dv.d.id)+"="+encodeURIComponent(dv.val))
-								.join("&")
-						+ "&signature=" + encodeURIComponent(signature)
-					);
-				//console.log("Url:",url)
-				$("#url-display").val(url)
-				if($("#embed-flag")[0].checked){
-						$("#embed-iframe")[0].src=url
-					}
-				$("#dialog").dialog("close")
-			})
-	}
+//Just functions below
 
 function set(obj,path,val){
 		if(path.split){path=path.split('.')}

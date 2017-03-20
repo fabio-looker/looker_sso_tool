@@ -312,7 +312,7 @@ $("#build-form").on("submit",function(evt){
 				+ "?"
 				+ definitionValues
 						.filter(dv=>dv.d.sort.qs)
-						//.sort(sorter("d.sort.qs")) //Not required, but nice for consistency
+						.sort(sorter("d.sort.qs")) //Not required, but nice for consistency
 						.map(dv=>encodeURIComponent(dv.d.id)+"="+encodeURIComponent(dv.val))
 						.join("&")
 				+ "&signature=" + encodeURIComponent(signature)

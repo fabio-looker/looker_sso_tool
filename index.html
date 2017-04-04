@@ -204,7 +204,7 @@ var definitions=[
 			},
 			fn:(a=>(a||[]).reduce(objByOf(["model","field"],"value"),{}))},
 
-		{sort:{ui:91,qs:41,hash:00}, id:"force_logout_login",schema:{type:"boolean",required:true,format:"checkbox"}}
+		{sort:{ui:91,qs:41,hash:00}, id:"force_logout_login",schema:{type:"boolean",required:true,format:"checkbox",fn:(b)=>b===false?false:true}}
 	]
 	//.map(d=>set(d,"schema",get(d,"schema")||{}))
 	.map(d=>set(d,"schema.type",get(d,"schema.type")||(get(d,"schema.oneOf")?undefined:"string")))
@@ -230,7 +230,7 @@ var editorDef= {
 						.filter(d => d.sort.ui)
 						.reduce(objByOf("id","schema"),{})
 			},
-		startval: tryLocalStorageGet("json-val",initialValue),
+		startval: tryJSONParse(qs("o")) || tryJSONParse(localStorage.getItem("json-val")) || initialValue,
 		//"required_by_default":true,
 		"disable_collapse":true,
 		"disable_properties":true,
@@ -377,12 +377,17 @@ function pathBuilderObjectToString(obj){
 	
 	
 	}
-function tryLocalStorageGet(key,defaultVal){
+function tryJSONParse(s){
 		try{
-				return JSON.parse(localStorage.getItem(key))||defaultVal
+				return JSON.parse(s)
 			}catch(e){
-				return defaultVal
+				return undefined
 			}
+	}
+function qs(k){
+		return document.location.search.slice(1).split("&")
+		.filter(function(p){return p.indexOf(encodeURIComponent(k)+"=")===0})
+		.map(function(p){return decodeURIComponent(p.split("=").slice(1).join("="))})[0]
 	}
 </script>
 <script>

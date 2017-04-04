@@ -261,6 +261,8 @@ $("#url-display").on("keypress",function(evt){
 				$("#embed-iframe")[0].src=this.value
 			}
 	})
+	
+window.addEventListener("message",function(evt){console.log("Top-window message received:",tryJSONParse(evt.data)||evt)})
 
 $("#build-form").on("submit",function(evt){
 		evt.preventDefault();

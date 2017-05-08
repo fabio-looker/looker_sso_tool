@@ -58,6 +58,7 @@
 	<div style="flex-grow:1;min-width:480px;margin:0 25px">
 		<h2>Tips</h2>
 		<ul style="font-size:0.8em; font-family:serif; color:#333;">
+			<li> This is a static HTML file and can be used locally. <span style="color:#633">If you use it from a shared domain (e.g. rawgit.com), other scripts on that domain may have access to data you enter here.<span></li>
 			<li> This is for demo/understanding only. You should never make the embed secret available to a user's browser.</li>
 			<li> Check the properties button for additional parameters you can configure</li>
 			<li> The form state is persisted when you close this page (Use non-incognito mode)</li>
@@ -261,7 +262,7 @@ $("#url-display").on("keypress",function(evt){
 				$("#embed-iframe")[0].src=this.value
 			}
 	})
-	
+
 window.addEventListener("message",function(evt){console.log("Top-window message received:",tryJSONParse(evt.data)||evt)})
 
 $("#build-form").on("submit",function(evt){

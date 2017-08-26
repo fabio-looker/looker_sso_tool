@@ -23,11 +23,12 @@
 <html>
 <head>
 	<title>SSO Embed Constructor</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/2.2.0/sha1.js" async="true" integrity="sha256-+wcjkt38O0q7BEzMX2Ivt0V9AGhx2jhuMtcdp5zHnGM=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/json-editor/0.7.28/jsoneditor.min.js" integrity="sha256-51+oMmpgSgS4jV5/DcGKnDHIOL6Jeie2i7ka6sPQVro=" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.3/css/foundation.min.css" integrity="sha256-NTds7atVCDeolLUzbcl45lx4gJYO+hNXCaX1wC2HQHc=" crossorigin="anonymous" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/2.2.0/sha1.js" integrity="sha256-+wcjkt38O0q7BEzMX2Ivt0V9AGhx2jhuMtcdp5zHnGM=" crossorigin="anonymous"></script>
+<script src="https://cdn.rawgit.com/Nanonid/rison/e64af6c096fd30950ec32cfd48526ca6ee21649d/js/rison.js" integrity="sha256-4Zg2e0UX/I8JAIl4CQgnB/A15bw2jxjLCu/mjQRGoRI=" crossorigin="anonymous"></script>
 <style>textarea{font-size:10pt !important;}</style>
 <script>
 	// Set the JSONEditor CSS theme and icon library globally
@@ -56,7 +57,7 @@
 		</form>
 	</div>
 	<div style="flex-grow:1;min-width:480px;margin:0 25px">
-		<h2>Tips</h2>
+		<h5>Tips</h5>
 		<ul style="font-size:0.8em; font-family:serif; color:#333;">
 			<li> This is a static HTML file and can be used locally.
 				<span style="color:#C33;font-weight:bold;display:none" id="origin-warning">
@@ -67,16 +68,18 @@
 			<li> If you want to use the Embed URI Validator in Looker, embedding here will consume the nonce and cause the URL to be invalid. Uncheck the "Embed" checkbox at the bottom to not embed after building the URL.</li>
 			<li> Links: [<a href="https://docs.looker.com/reference/embedding/sso-embed">The official SSO Embed docs</a>] [<a href="https://github.com/looker/looker_embed_sso_examples">Examples in various server-side languages</a>]</li>
 		</ul>
-		<h2>Built URL</h2>
+		<h5>Shareable form state</h5>
+		<input type="text" style="width:100%;" readonly="readonly" id="share-state" />
+		<h5>Built Embed URL</h5>
 		<textarea style="width:100%;height:12em" readonly="readonly" id="url-display"></textarea>
-		<h2>Embed Preview</h2>
+		<h5>Embed Preview</h5>
 		<iframe id="embed-iframe" style="width:100%;height:560px"></iframe>
 	</div>
 </div>
 </body>
 <script>
 if (
-		document.location.scheme !== "file:"
+		document.location.protocol !== "file:"
 		&& document.location.hostname !== "localhost"
 		&& document.location.hostname !== "127.0.0.1"
 		&& document.location.origin !== "https://fabio-looker.github.io"
@@ -240,7 +243,11 @@ var editorDef= {
 						.filter(d => d.sort.ui)
 						.reduce(objByOf("id","schema"),{})
 			},
-		startval: tryJSONParse(qs("o")) || tryJSONParse(localStorage.getItem("json-val")) || initialValue,
+		startval: 
+				tryRisonParse(qh("o"))
+				|| tryJSONParse(qh("o"))
+				|| tryJSONParse(localStorage.getItem("json-val"))
+				|| initialValue,
 		//"required_by_default":true,
 		"disable_collapse":true,
 		"disable_properties":true,
@@ -248,10 +255,16 @@ var editorDef= {
 		"keep_oneof_values":true,
 		"disable_edit_json":true
 	}
+document.location.hash="" //Remove state from URL so it's not unintentionally copied/refreshed
 var editor = new JSONEditor($("#json-editor")[0],editorDef);
 editor.on('change',function() {
 		localStorage.setItem("json-val",JSON.stringify(editor.getValue()))
 	});
+window.addEventListener("hashchange", function(evt){
+		var newVal= tryRisonParse(qh("o")) || tryJSONParse(qh("o"));
+		if(newVal){editor.setValue(newVal)}
+		document.location.hash="" //Remove state from URL so it's not unintentionally copied/refreshed
+	}, false);
 //grrrrrrr...... Chrome is doing something annoying...
 //$("input").on("invalid",function(evt){
 //		evt.preventDefault();//
@@ -266,6 +279,14 @@ $("#url-display").focus(function(){
 				$(this).off("click.a keyup.a").select();
 			});
 	});
+$("#share-state").focus(function(){
+		// Highlight all on select
+		// Solution per http://stackoverflow.com/a/24589806
+		$(this).on("click.a keyup.a", function(e){
+				$(this).off("click.a keyup.a").select();
+			});
+	});
+	
 $("#url-display").on("keypress",function(evt){
 		if(evt.keyCode==13){
 				$("#embed-iframe")[0].src=this.value
@@ -286,13 +307,15 @@ $("#build-form").on("submit",function(evt){
 		evt.preventDefault();
 		$("#msg").hide();
 		var errs=editor.validate();
+		var editorValue=editor.getValue()
+		var maskedEditorValue=Object.assign({},editorValue,{embed_secret:undefined})
+		$("#share-state").val("https://fabio-looker.github.io/looker_sso_tool/#o="+rison.encode_uri(maskedEditorValue))
 		if(errs.length){
 				$("#msg")
 				.text(errs.map(e=>e.path+": "+e.message).join("\n"))
 				.show()
 				return;
 			}
-		var editorValue=editor.getValue()
 		var definitionValues=
 				definitions
 				.map(d=>({d:d,val:d.default || ""}))
@@ -404,8 +427,20 @@ function tryJSONParse(s){
 				return undefined
 			}
 	}
+function tryRisonParse(s){
+		try{
+				return rison.decode(s.replace(/\+/g," "))
+			}catch(e){
+				return undefined
+			}
+	}
 function qs(k){
 		return document.location.search.slice(1).split("&")
+		.filter(function(p){return p.indexOf(encodeURIComponent(k)+"=")===0})
+		.map(function(p){return decodeURIComponent(p.split("=").slice(1).join("="))})[0]
+	}
+function qh(k){
+		return document.location.hash.slice(1).split("&")
 		.filter(function(p){return p.indexOf(encodeURIComponent(k)+"=")===0})
 		.map(function(p){return decodeURIComponent(p.split("=").slice(1).join("="))})[0]
 	}

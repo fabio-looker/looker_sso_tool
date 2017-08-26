@@ -159,7 +159,7 @@ var definitions=[
 				fn:(path=>"/login/embed/"+encodeURIComponent(path))
 			},
 		{sort:{ui:98,qs:11,hash:03}, id:"nonce",schema:{required:false},fn:(x=>x||nonce(16))},
-		{sort:{ui:99,qs:12,hash:04}, id:"time",schema:{required:false},fn:(x=>x||parseInt(Date.now()/1000))},
+		{sort:{ui:99,qs:12,hash:04}, id:"time",schema:{required:false},fn:(x=>parseInt(x)||parseInt(Date.now()/1000))},
 		{sort:{ui:90,qs:13,hash:05}, id:"session_length", schema:{required:true,type:"number",minimum:1}},
 		{sort:{ui:04,qs:14,hash:06}, id:"external_user_id", schema:{required:true}},
 		{sort:{ui:05,qs:31,hash:00}, id:"first_name", schema:{required:true}},

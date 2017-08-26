@@ -272,7 +272,15 @@ $("#url-display").on("keypress",function(evt){
 			}
 	})
 
-window.addEventListener("message",function(evt){console.log("Top-window message received:",tryJSONParse(evt.data)||evt)})
+//
+window.addEventListener("message",function(event){
+		//In order to receive events from Looker embed frame, you must add a whitelisted embed_domain parameter
+		//to the embed path querystring (not to the SSO querystring).
+		//Always validate the origin of messages before you trust their contents!
+		//if(event.origin!=="https://expected-origin/"){return;}
+		//https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage#Security_concerns
+		console.log("Top-window message received from "+event.origin,tryJSONParse(evt.data)||evt)
+	})
 
 $("#build-form").on("submit",function(evt){
 		evt.preventDefault();

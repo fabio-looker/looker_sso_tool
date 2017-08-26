@@ -58,13 +58,14 @@
 	<div style="flex-grow:1;min-width:480px;margin:0 25px">
 		<h2>Tips</h2>
 		<ul style="font-size:0.8em; font-family:serif; color:#333;">
-			<li> This is a static HTML file and can be used locally. <span style="color:#633">If you use it from a shared domain (e.g. rawgit.com), other scripts on that domain may have access to data you enter here.<span></li>
-			<li> This is for demo/understanding only. You should never make the embed secret available to a user's browser.</li>
-			<li> Check the properties button for additional parameters you can configure</li>
-			<li> The form state is persisted when you close this page (Use non-incognito mode)</li>
-			<li> The force_logout_login parameter will cause the embed to either use your existing Looker session, or force a new one (thus logging you out), so use incognito mode to test if you are also logged into Looker</li>
-			<li> Use the JSON button to copy the form state into another page (i.e. from non-incognito into an incognito tab)</li>
+			<li> This is a static HTML file and can be used locally.
+				<span style="color:#C33;font-weight:bold;display:none" id="origin-warning">
+					If you use it from a shared domain (e.g. rawgit.com), other scripts on that domain may have access to data you enter here, including your embed secret :(  
+				 	You can use the domain <a href="https://fabio-looker.github.io/looker_sso_tool/">fabio-looker.github.io</a> instead.<span></li>
+			<li> This is for demo/understanding only. You should <i>never</i> make your embed secret available to a user's browser!</li>
+			<li> Check the [Properties] button for additional parameters you can configure</li>
 			<li> If you want to use the Embed URI Validator in Looker, embedding here will consume the nonce and cause the URL to be invalid. Uncheck the "Embed" checkbox at the bottom to not embed after building the URL.</li>
+			<li> Links: [<a href="https://docs.looker.com/reference/embedding/sso-embed">The official SSO Embed docs</a>] [<a href="https://github.com/looker/looker_embed_sso_examples">Examples in various server-side languages</a>]</li>
 		</ul>
 		<h2>Built URL</h2>
 		<textarea style="width:100%;height:12em" readonly="readonly" id="url-display"></textarea>
@@ -74,6 +75,14 @@
 </div>
 </body>
 <script>
+if (
+		document.location.scheme !== "file:"
+		&& document.location.hostname !== "localhost"
+		&& document.location.hostname !== "127.0.0.1"
+		&& document.location.origin !== "https://fabio-looker.github.io"
+	){
+		$("#origin-warning").show()
+	}
 var pathSchema = {type:"string",required:true}
 /* TODO write toString for this "Path Builder" schema
 		{title:"Path",required:true,oneOf:[

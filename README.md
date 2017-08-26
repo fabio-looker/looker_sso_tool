@@ -1,3 +1,5 @@
+[Run this tool on Github.io](https://fabio-looker.github.io/fabio-looker)
+
 Hi!
 
 This is a tool, not an example.

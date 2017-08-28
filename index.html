@@ -66,7 +66,10 @@
 			<li> This is for demo/understanding only. You should <i>never</i> make your embed secret available to a user's browser!</li>
 			<li> Check the [Properties] button for additional parameters you can configure</li>
 			<li> If you want to use the Embed URI Validator in Looker, embedding here will consume the nonce and cause the URL to be invalid. Uncheck the "Embed" checkbox at the bottom to not embed after building the URL.</li>
-			<li> Links: [<a href="https://docs.looker.com/reference/embedding/sso-embed">The official SSO Embed docs</a>] [<a href="https://github.com/looker/looker_embed_sso_examples">Examples in various server-side languages</a>]</li>
+			<li> Links:
+				<nobr>[<a href="https://docs.looker.com/reference/embedding/sso-embed">Official SSO Embed docs</a>]</nobr>
+				<nobr>[<a href="https://github.com/looker/looker_embed_sso_examples">Examples in various server-side languages</a>]</nobr>
+				<nobr>[<a href="https://github.com/fabio-looker/looker_sso_tool/issues">Report an issue with this page</a>]</li></nobr>
 		</ul>
 		<h5>Shareable form state</h5>
 		<input type="text" style="width:100%;" readonly="readonly" id="share-state" />
@@ -163,7 +166,8 @@ var pathSchema = {type:"string",required:true}
 					}
 			}
 	]} */
-				
+
+// The hash sort order is significant. The UI and querystring sort order are just for aesthetics
 var definitions=[
 		{sort:{ui:01,qs:00,hash:00}, id:"embed_secret", schema:{required:true}},
 		{sort:{ui:02,qs:00,hash:01}, id:"host", schema:{required:true}, noJSON:true},
@@ -171,7 +175,7 @@ var definitions=[
 				fn:(path=>"/login/embed/"+encodeURIComponent(path))
 			},
 		{sort:{ui:98,qs:11,hash:03}, id:"nonce",schema:{required:false},fn:(x=>x||nonce(16))},
-		{sort:{ui:99,qs:12,hash:04}, id:"time",schema:{required:false},fn:(x=>parseInt(x)||parseInt(Date.now()/1000))},
+		{sort:{ui:99,qs:12,hash:04}, id:"time",schema:{required:false},fn:(x=>parseInt(x)||parseInt(Date.now()/1000))}, //Left it as a string for now because I'm lazy and didn't want to confirm how JSONEditor would treat a blank input... 
 		{sort:{ui:90,qs:13,hash:05}, id:"session_length", schema:{required:true,type:"number",minimum:1}},
 		{sort:{ui:04,qs:14,hash:06}, id:"external_user_id", schema:{required:true}},
 		{sort:{ui:05,qs:31,hash:00}, id:"first_name", schema:{required:true}},

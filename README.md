@@ -1,4 +1,4 @@
-[Run this tool on Github.io](https://fabio-looker.github.io/fabio-looker)
+[Run this tool on Github.io](https://fabio-looker.github.io/looker_sso_tool/)
 
 Hi!
 

@@ -304,7 +304,7 @@ window.addEventListener("message",function(event){
 		//Always validate the origin of messages before you trust their contents!
 		//if(event.origin!=="https://expected-origin/"){return;}
 		//https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage#Security_concerns
-		console.log("Top-window message received from "+event.origin,tryJSONParse(evt.data)||evt)
+		console.log("Top-window message received from "+event.origin,tryJSONParse(event.data)||event)
 	})
 
 $("#build-form").on("submit",function(evt){

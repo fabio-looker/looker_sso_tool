@@ -158,7 +158,7 @@ var definitions=[
 
 		{sort:{ui:91,qs:41,hash:00}, id:"force_logout_login",schema:{
 				type:"string",required:false,enum:["","true","false"],
-				description:"Due to a bug in the form tool used here, you can't uncheck this in this UI. Fortunately, you really always want to set this to true, as otherwise the SSO Embed authentication will continue using an existing session if one is present in the browser",
+				description:"You basically always want to set this to true. If false, the embed will use an existing session if present in the browser, thereby ignoring all the above parameters",
 			},
 			fn:a=>(a!=="false")}
 			

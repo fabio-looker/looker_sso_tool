@@ -29,7 +29,17 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.3/css/foundation.min.css" integrity="sha256-NTds7atVCDeolLUzbcl45lx4gJYO+hNXCaX1wC2HQHc=" crossorigin="anonymous" />
 <script src="https://cdn.rawgit.com/Nanonid/rison/e64af6c096fd30950ec32cfd48526ca6ee21649d/js/rison.js" integrity="sha256-4Zg2e0UX/I8JAIl4CQgnB/A15bw2jxjLCu/mjQRGoRI=" crossorigin="anonymous"></script>
-<style>textarea{font-size:10pt !important;}</style>
+<style>
+	textarea{font-size:10pt !important;}
+	#json-editor input+p{display:none}
+	#json-editor input:focus+p{display:block}
+	#json-editor textarea+p{display:none}
+	#json-editor textarea:focus+p{display:block}
+	#json-editor select+p{display:none}
+	#json-editor select:focus+p{display:block}
+	#json-editor select+p{display:none}
+	#json-editor select:focus+p{display:block}
+</style>
 <script>
 	// Set the JSONEditor CSS theme and icon library globally
 	JSONEditor.defaults.theme = 'foundation5';
@@ -89,95 +99,18 @@ if (
 	){
 		$("#origin-warning").show()
 	}
-var pathSchema = {type:"string",required:true}
-/* TODO write toString for this "Path Builder" schema
-		{title:"Path",required:true,oneOf:[
-		{title:"Manual path",type:"string"},
-		{title:"Space",
-				type:"object",
-				options:{"no_additional_properties":true},
-				properties:{
-						"id":{title:"Space ID",type:"number"},
-						"querystring":{
-								type:"object",title:"Querystring parameters",
-								options:{disable_properties:false,no_additional_properties:false},
-								properties:{
-										"embed_domain":{required:false,type:"string",pattern:"^https?://[-.a-zA-Z0-9]$"}
-									}
-							}	
-					}
-			},
-		{title:"Look",
-				type:"object",
-				options:{"no_additional_properties":true},
-				properties:{
-						"id":{title:"Look ID",type:"number"},
-						"querystring":{
-								type:"object",title:"Querystring parameters",
-								options:{disable_properties:false,no_additional_properties:false},
-								properties:{
-										"embed_domain":{required:false,type:"string",pattern:"^https?://[-.a-zA-Z0-9]$"}
-									}
-							}	
-					}
-			},
-		{title:"UDD dashboard",
-				type:"object",
-				options:{"no_additional_properties":true},
-				properties:{
-						"id":{title:"Dashboard ID",type:"number"},
-						"querystring":{
-								type:"object",title:"Querystring parameters",
-								options:{disable_properties:false,no_additional_properties:false},
-								properties:{
-										"embed_domain":{required:false,type:"string",pattern:"^https?://[-.a-zA-Z0-9]$"}
-									}
-							}	
-					}
-			},
-		{title:"LookML dashboard",
-				type:"object",
-				format:"compact",
-				options:{"no_additional_properties":true},
-				properties:{
-						"model":{title:"Model name",type:"string"},
-						"dashboard":{title:"Dashboard name",type:"string"},
-						"querystring":{
-								type:"object",title:"Querystring parameters",
-								options:{disable_properties:false,no_additional_properties:false},
-								properties:{
-										"embed_domain":{required:false,type:"string",pattern:"^https?://[-.a-zA-Z0-9]$"}
-									}
-							}	
-					}
-			},
-		{title:"Explore",
-				type:"object",
-				properties:{
-						"model":{title:"Model name",type:"string"},
-						"explore":{title:"Explore name",type:"string"},
-						"querystring":{
-								type:"object",title:"Querystring parameters",
-								options:{disable_properties:false,no_additional_properties:false},
-								properties:{
-										"embed_domain":{required:false,type:"string",pattern:"^https?://[-.a-zA-Z0-9]$"}
-									}
-							}	
-					}
-			}
-	]} */
 
 // The hash sort order is significant. The UI and querystring sort order are just for aesthetics
 var definitions=[
 		{sort:{ui:01,qs:00,hash:00}, id:"embed_secret", schema:{required:true}},
-		{sort:{ui:02,qs:00,hash:01}, id:"host", schema:{required:true}, noJSON:true},
-		{sort:{ui:03,qs:00,hash:02}, id:"embed_path", schema:pathSchema, noJSON:true,
+		{sort:{ui:02,qs:00,hash:01}, id:"host", noJSON:true,		schema:{required:true, description:"For example, 'customer.looker.com'"}},
+		{sort:{ui:03,qs:00,hash:02}, id:"embed_path", noJSON:true,	schema:{required:true, description:"Should start with '/embed/'. Add any querystring parameters for filtering or embed_domain here."}, 
 				fn:(path=>"/login/embed/"+encodeURIComponent(path))
 			},
-		{sort:{ui:98,qs:11,hash:03}, id:"nonce",schema:{required:false},fn:(x=>x||nonce(16))},
-		{sort:{ui:99,qs:12,hash:04}, id:"time",schema:{required:false},fn:(x=>parseInt(x)||parseInt(Date.now()/1000))}, //Left it as a string for now because I'm lazy and didn't want to confirm how JSONEditor would treat a blank input... 
-		{sort:{ui:90,qs:13,hash:05}, id:"session_length", schema:{required:true,type:"number",minimum:1}},
-		{sort:{ui:04,qs:14,hash:06}, id:"external_user_id", schema:{required:true}},
+		{sort:{ui:98,qs:11,hash:03}, id:"nonce",schema:{required:false, description:"Any unique value. Once used to embed, cannot be reused for another embed."},fn:(x=>x||nonce(16))},
+		{sort:{ui:99,qs:12,hash:04}, id:"time",schema:{required:false, description:"Epoch timestamp. The embed URL will contain this time incorporated into the signature. Looker will only accept the URL for 5 minutes after this timestamp (to prevent SSO Embed URLs being stored for later use)"},fn:(x=>parseInt(x)||parseInt(Date.now()/1000))}, //Left it as a string for now because I'm lazy and didn't want to confirm how JSONEditor would treat a blank input... 
+		{sort:{ui:90,qs:13,hash:05}, id:"session_length", schema:{required:true,type:"number",minimum:1, description:"Session length in seconds"}},
+		{sort:{ui:04,qs:14,hash:06}, id:"external_user_id", schema:{required:true, description:"Any value that acts an identifier for this user. Subsequent SSO Embed requests pertaining to the same external_user_id will update the associated user"}},
 		{sort:{ui:05,qs:31,hash:00}, id:"first_name", schema:{required:true}},
 		{sort:{ui:06,qs:32,hash:00}, id:"last_name", schema:{required:true}},
 		{sort:{ui:07,qs:21,hash:07}, id:"permissions",
@@ -203,9 +136,10 @@ var definitions=[
 					]}}
 			},
 		{sort:{ui:08,qs:22,hash:08}, id:"models",schema:{required:true,pattern:"^[A-Za-z0-9_]+(,\\s*[A-Za-z0-9_]+)*$"},fn:(s)=>s.split(/,\s*/)},
-		{sort:{ui:09,qs:23,hash:09}, id:"group_ids",schema:{required:false,pattern:"^$|^[0-9]+(,\\s*[0-9]+)*$"},fn:(s)=>(s==""?[]:s.split(/,\s*/).map(s=>parseInt(s)))},
-		{sort:{ui:10,qs:24,hash:10}, id:"external_group_id",schema:{required:false},fn:x=>x||""},
+		{sort:{ui:09,qs:23,hash:09}, id:"group_ids",schema:{required:false,pattern:"^$|^[0-9]+(,\\s*[0-9]+)*$",description:"The ID of one or more existing user group within Looker. Useful for several use cases; notably for granting access to a Shared space that is maintained by your non-embed users."},fn:(s)=>(s==""?[]:s.split(/,\s*/).map(s=>parseInt(s)))},
+		{sort:{ui:10,qs:24,hash:10}, id:"external_group_id",schema:{required:false, description: "Users with the same external_group_id will be able to share content with eachother (assuming they have the appropriate permissions). Use a human-readable string for this. For example 'Acme'"},fn:x=>x||""},
 		{sort:{ui:11,qs:25,hash:11}, id:"user_attributes",schema:{required:false,type:"array",format:"table",items:{type:"object",
+					description: "See https://discourse.looker.com/t/user-attributes/3979 for more info",
 					properties:{
 							field:{type:"string"},
 							value:{type:"string"}
@@ -213,6 +147,7 @@ var definitions=[
 				},
 				fn:(a=>(a||[]).reduce(objByOf(["field"],"value"),{}))},
 		{sort:{ui:12,qs:26,hash:12}, id:"access_filters",schema:{type:"array",required:false,format:"table",items:{type:"object",
+				description:"Stand-alone access filters are deprecated. Use 'user attributes' instead.",
 				properties:{
 						model:{type:"string"},
 						field:{type:"string"},
@@ -221,7 +156,12 @@ var definitions=[
 			},
 			fn:(a=>(a||[]).reduce(objByOf(["model","field"],"value"),{}))},
 
-		{sort:{ui:91,qs:41,hash:00}, id:"force_logout_login",schema:{type:"boolean",required:true,format:"checkbox",fn:(b)=>b===false?false:true}}
+		{sort:{ui:91,qs:41,hash:00}, id:"force_logout_login",schema:{
+				type:"string",required:false,enum:["","true","false"],
+				description:"Due to a bug in the form tool used here, you can't uncheck this in this UI. Fortunately, you really always want to set this to true, as otherwise the SSO Embed authentication will continue using an existing session if one is present in the browser",
+			},
+			fn:a=>(a!=="false")}
+			
 	]
 	//.map(d=>set(d,"schema",get(d,"schema")||{}))
 	.map(d=>set(d,"schema.type",get(d,"schema.type")||(get(d,"schema.oneOf")?undefined:"string")))
@@ -234,8 +174,7 @@ var initialValue={
 		"external_user_id":"test-id-123",
 		"first_name":"Testy",
 		"last_name":"McTestFace",
-		"permissions":["access_data","see_looks"],
-		"force_logout_login":true
+		"permissions":["access_data","see_looks"]
 	}
 
 var editorDef= {

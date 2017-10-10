@@ -243,7 +243,13 @@ window.addEventListener("message",function(event){
 		//Always validate the origin of messages before you trust their contents!
 		//if(event.origin!=="https://expected-origin/"){return;}
 		//https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage#Security_concerns
+		//In our case, we will compare it to the host of the last embedded host which we are storing as a data attribute in our dom
+		if(event.origin!=="https://"+($("#embed-iframe")[0].dataset.lastHost||"")){return;}
 		console.log("Top-window message received from "+event.origin,tryJSONParse(event.data)||event)
+		if(event.data.type=="page:properties:changed" && event.data.height){
+				console.log("Top-window is updating iframe height based on received event");
+				$("#embed-iframe")[0].style.height = event.data.height+"px"
+			}
 	})
 
 $("#build-form").on("submit",function(evt){
@@ -307,6 +313,7 @@ $("#build-form").on("submit",function(evt){
 		$("#url-display").val(url)
 		if($("#embed-flag")[0].checked){
 				$("#embed-iframe")[0].src=url
+				$("#embed-iframe")[0].dataset.lastHost=valuesById.host
 			}
 	})
 

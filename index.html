@@ -245,10 +245,11 @@ window.addEventListener("message",function(event){
 		//https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage#Security_concerns
 		//In our case, we will compare it to the host of the last embedded host which we are storing as a data attribute in our dom
 		if(event.origin!=="https://"+($("#embed-iframe")[0].dataset.lastHost||"")){return;}
-		console.log("Top-window message received from "+event.origin,tryJSONParse(event.data)||event)
-		if(event.data.type=="page:properties:changed" && event.data.height){
+		var data = tryJSONParse(event.data)
+		console.log("Top-window message received from "+event.origin,data||event)
+		if(data.type=="page:properties:changed" && data.height){
 				console.log("Top-window is updating iframe height based on received event");
-				$("#embed-iframe")[0].style.height = event.data.height+"px"
+				$("#embed-iframe")[0].style.height = data.height+"px"
 			}
 	})
 

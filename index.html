@@ -86,7 +86,10 @@
 		<h5>Built Embed URL</h5>
 		<textarea style="width:100%;height:12em" readonly="readonly" id="url-display"></textarea>
 		<h5>Embed Preview</h5>
-		<iframe id="embed-iframe" style="width:100%;height:560px;box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);" frameBorder="0"></iframe>
+		<div style="position:relative;top:0;left:0;width:100%">
+			<img src="throbber.gif" id="throbber" style="position:absolute;left:-128px;margin-left:50%;top:120px;display:none" /></center>
+			<iframe id="embed-iframe" style="width:100%;height:560px;box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);" frameBorder="0"></iframe>
+		</div>
 	</div>
 </div>
 </body>
@@ -247,6 +250,7 @@ window.addEventListener("message",function(event){
 		if(event.origin!=="https://"+($("#embed-iframe")[0].dataset.lastHost||"")){return;}
 		var data = tryJSONParse(event.data)
 		console.log("Top-window message received from "+event.origin,data||event)
+		if(data.type=="dashboard:run:start"){$("#throbber").hide()}
 		if(data.type=="page:properties:changed" && data.height){
 				console.log("Top-window is updating iframe height based on received event");
 				$("#embed-iframe")[0].style.height = data.height+"px"
@@ -315,6 +319,13 @@ $("#build-form").on("submit",function(evt){
 		if($("#embed-flag")[0].checked){
 				$("#embed-iframe")[0].src=url
 				$("#embed-iframe")[0].dataset.lastHost=valuesById.host
+				if(document.location.hostname
+				&& valuesById.embed_path.match(RegExp("%2[F6]embed_domain%3D(https%3A%2F%2F)?"+document.location.hostname.replace(/\./g,"\\.")))){
+						//The above conditional is just because I don't know if the Tool user will properly configure an embed domain
+						//so I don't want to show the throbber if there will be no events to hide it once the iframe does load
+						$("#throbber").show()
+						setTimeout(function(){$("#throbber").hide()},10*1000)//Failsafe
+					}
 			}
 	})
 

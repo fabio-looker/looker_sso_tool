@@ -250,7 +250,7 @@ window.addEventListener("message",function(event){
 		if(event.origin!=="https://"+($("#embed-iframe")[0].dataset.lastHost||"")){return;}
 		var data = tryJSONParse(event.data)
 		console.log("Top-window message received from "+event.origin,data||event)
-		if(data.type=="dashboard:run:start"){$("#throbber").hide()}
+		if(data.type=="page:changed"){$("#throbber").hide()}
 		if(data.type=="page:properties:changed" && data.height){
 				console.log("Top-window is updating iframe height based on received event");
 				$("#embed-iframe")[0].style.height = data.height+"px"

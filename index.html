@@ -293,6 +293,7 @@ $("#build-form").on("submit",function(evt){
 				.map(dv=>dv.val)
 				.join("\n")
 			;
+		console.log("String to sign:",hashContent)
 		var shaObj;
 		var signature=(
 				// Did you read the note at the top of the file???

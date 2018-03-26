@@ -1,0 +1,170 @@
+<html>
+<title>SSO Embed troubleshooting guide</title>
+<style>
+details {margin-left: 2em;}
+p {color:#333;}
+summary {border-width: 0 0 1 0;border-style: solid; cursor:pointer; padding:0.25em 0 0.1em 0;}
+details[open]>summary {font-weight:bold; background: linear-gradient(to bottom, rgba(254,255,255,1) 0%,rgba(210,235,249,1) 100%)}
+details[open] {padding-bottom:2.5em;}
+/*details[open] ~ details:not([open]) {color:#ccc} */
+details>summary { border-color:#333; }
+details>details>summary {border-color:#666}
+details>details>details>summary {border-color:#999}
+details>details>details>details>summary {border-color:#aaa}
+details>details>details>details>details>summary {border-color:#ccc}
+img{display:block;margin: 1em auto 1em auto; box-shadow: 5px 5px 15px #999}
+code {white-space: pre-line;}
+</style>
+<body>
+	<span style="color:#DDD;position:absolute;top:1em;right:1em">
+		Updated 2018-02-26
+	</span>
+	<h3>Let's troubleshoot some SSO Embedding.</h3>
+	<p>This is highly work-in-progress. Please submit pull requests!</p>
+	<h3>What's going on?</h3>
+	<details><summary>The iframe isn't loading as desired</summary>
+		<p>Open the browser dev tools and take a look at the network tab as an SSO Embed URL is loaded into your iframe. What do you see?</p>
+		<details><summary>There is no request for the SSO Embed URL (like /login/embed/...)</summary>
+			<p>Some browsers hide the request from the dev tools when the request is blocked due security options like X-Frame-Options.</p>
+			<p>Generate a new SSO Embed URL, but open it in a new tab with the dev tools open instead of embedding it. </p>
+			<p>Look for an HTTP response header of X-Frame-Options</p>
+			<details><summary>This header is present and set to SAMEORIGIN</summary>
+				<p>Proceed from the last step as though this request/response was there.</p>
+				</details>
+			<details><summary>This header is present and set to DENY</summary>
+				<p>Looker does not set this value. Customer-hosted configurations may set up proxies in front of Looker which add these by default. Check that this is not the case.</p>
+				</details>
+			<details><summary>This header is NOT present</summary>
+					<p>Some other mechanism is blocking the request. Check for:</p>
+					<ul>
+					<li> A content security policy header on the parent or ancestor page that may be blocking the request, such as <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-src">Content-Security-Policy: frame-src</a></li>
+					<li> Browser extensions that may be blocking the requests</li>
+					</ul>
+				</details>
+			</details>
+		<details><summary>The request for the SSO Embed URL (like /login/embed/...) results in a 303</summary>
+			(...usually to either /login or to the homepage if you have an active session)
+			<img src="https://discourse.looker.com/uploads/default/original/2X/c/c3db585b13ef20a86387bca598ce0410f684a222.png" width="690" height="201" /><br />
+			<p>The SSO Embed authentication is not working. Generate a <b>new</b> SSO Embed URL and enter it into the Embed URI Validator at /admin/embed</p>
+			<details><summary>The Embed URI Validator is not present</summary>
+				<p>Embedding isn't enabled. Enable embedding :)</p>
+				</details>
+			<details><summary>Embed URI is valid</summary>
+				<p>Hmm, the earlier request should have worked :-/</p>
+				</details>
+			<details><summary>Uh oh, something went wrong!</summary>
+				<p>In addition to adjusting your URL to this situation, <b>please file a bug</b> with chat support for this, as seeing this error indicates a need to enhance the Embed URI Validator.</p>
+				<details><summary>Check if your URL or JSON encoding is malformed</summary>
+					<img src="https://discourse.looker.com/uploads/default/original/2X/5/5fc2ae07ecd762c45bfe5211ccc880827e1cebd4.png" width="274" height="111">
+					<p>This code snippet can help you quickly check a URL's encoding for common issues.</p>
+					<code>
+						var url = ""
+						if (!url.split("?")[1]){console.error("No querystring!")}
+						else{url.split("?")[1].split("&amp;").map(pair=>pair.split("=")).map(([key,value])=>[key,caught(decodeURIComponent)(value)]).map(([key,value])=>[key,(value.message || {signature:1}[key]) ? value : caught(JSON.parse)(value)])}
+						function caught(fn){return x=>{try{return fn(x)}catch(e){return e}}} </code>
+					</details>
+				</details>
+			<details><summary>Embed URI is not valid: 'nonce' param already used this hour: '...'</summary>
+				<p>Did you really generate a new URL to put into the validator? If so, is your code to generate URLs actually generating nonces?</p>
+				</details>
+			<details><summary>Embed URI is not valid: 'signature' param failed to authenticate: '...'</summary>
+				<p>The signature does not correspond to the passed parameters. Check if the <a href="https://fabio-looker.github.io/looker_sso_tool/" target="tool">SSO Embed Tool</a> is able to generate a working signature.<p>
+				<details><summary>The signatures generated by the SSO Embed Tool also fail to validate</summary>
+					<p>You are probably using an incorrect embed secret. Since there is no way to confirm the current secret, you will instead have to reset the embed secret. (Be careful if there are already other applications using SSO Embedding, as they will need to get the new secret.)</p>
+					</details>
+				<details><summary>The signatures generated by the SSO Embed Tool do validate</summary>
+					<p>Have your application log or dump the parameters it is using, and string that it is signing.</p>
+					<p>Next, use the "Properties" button in the SSO Embed Tool to pass in all the same parameter values (such as timestamp and nonce), and then generate a URL with the tool, and look at the console for the correct string you should be signing.</p>
+						<img src="https://discourse.looker.com/uploads/default/original/2X/b/bf98631299479bfaf150b4ce14eeb2314e72b060.png" width="647" height="262" />
+						<img src="https://discourse.looker.com/uploads/default/original/2X/2/2657c6ae766b60d4b38656ae0254c2abec1d6fd4.png" width="690" height="484" />
+						</p>
+					<p>Finally, compare this to the one your application is logging.</p>
+					<details><summary>The strings to sign match between my application and the SSO Embed Tool</summary>
+						<p>If the strings to sign match, and the secrets match, then the implementation of the signing algorithm is off. See our <a href="https://github.com/looker/looker_embed_sso_examples">sample code for various languages</a></p>
+						</details>
+					<details><summary>The strings to sign do not match between my application and the SSO Embed Tool</summary>
+						<p>Adjust your application to generate the same string. Note that the strings must be byte-for-byte identical, including the order of parameters.</p>
+						</details> 
+					</details>
+				</details>
+			<details><summary>Missing required parameter: force_logout_login</summary>
+				<p>First, of course, check to make your URL has force_logout_login parameter</p>
+				<p>If your URL does seem to have the force_logout_login parameter, ensure you haven't accidentally encoded or skipped the "?" to actually start your querystring. It can get confusing since the embed path has querystring parameters of its own!</p>
+				</details>
+			<details><summary>Other errors...</summary>
+					<p>The remainder of errors reported by the Embed URI Validator generally tell you what you need to fix.</p>
+				</details>
+			</details>
+		<details><summary>The request for the SSO Embed URL (like /login/embed/...) results in a 302 to your "embed path"</summary>
+			<p>The SSO Embed authentication is working. Let's drill in on what happens next!</p>
+			<p>Look at the subsequent request to the URL indicated in the "Location" HTTP response header (your "embed path" URL)</p>
+			<details><summary>There is no request for the embed path URL</summary>
+				<p>Some browsers hide the request from the dev tools when the request is blocked due security options like X-Frame-Options.</p>
+				<p>Generate a new SSO Embed URL, but open it in a new tab with the dev tools open instead of embedding it. </p>
+				<p>Look for an HTTP response header of X-Frame-Options</p>
+				<details><summary>This header is present and set to SAMEORIGIN</summary>
+					<p>Proceed from the last step as though this request/response was there.</p>
+					</details>
+				<details><summary>This header is present and set to DENY</summary>
+					<p>Looker does not set this value. Customer-hosted configurations may set up proxies in front of Looker which add these by default. Check that this is not the case.</p>
+					</details>
+				<details><summary>This header is NOT present</summary>
+						<p>Some other mechanism is blocking the request. Check for:</p>
+						<ul>
+						<li> A content security policy header on the parent or ancestor page that may be blocking the request, such as <ahref="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-src">Content-Security-Policy: frame-src</a>
+						<li> Browser extensions that may be blocking the requests
+						</ul>
+					</details>
+				</details>
+			<details><summary>The embed path request results in a 401 response</summary>
+				<p>The browser is likely blocking the setting of third-party cookies. This can be resolved by either changing browser settings to allow third-party cookies, or changing DNS entries to make Looker available under the same domain as the parent page (if Looker hosts the instance, speak to the account manager)</p>
+				</details>
+			<details><summary>The embed path request either results in a 200 with HTTP Response header of "X-Frame-Options: SAMEORIGIN", or redirects to one that does</summary>
+				<p>What is the URL pattern for this request?</p>
+				<details><summary>`/dashboards/*` , `/looks/*` , or `/explore/*`</summary>
+					<p>`/embed` should be pre-pended to this path to make it an embeddable request.</p>
+					</details>
+				<details><summary>`/embed/dashboards/*` , `/embed/looks/*` , or `/embed/explore/*`</summary>
+					<p>Looker allows embedding these paths, and so it does not set a prohibitive X-Frame-Options HTTP response header for these requests. Customer-hosted configurations may set up proxies in front of Looker which add these by default. Check that this is not the case.</p>
+					</details>
+				<details><summary>None of the above</summary>
+					<p>Looker does not support embedding these types of content (as of v5.8)</p>
+					</details>
+				</details>
+			<details><summary>The embed path request results in a 40... response (All these still need to be confirmed...)</summary>
+				<p>This is a content/user permissions issue. What content are you embedding?</p>
+				<details><summary>An explore or LookML dashboard (URL like /dashboards/model::dashboard_name)</summary>
+					<p>Ensure the user has the access_data, and the explore/see_lookml_dashboards permission, either directly through the SSO Embed URL "permissions" parameter, or through a role through a group assigned via the group_ids parameter.</p>
+					<p>Either directly assign the relevant model in the SSO Embed URL "models" parameter, or assign a group (via the "group_ids" parameter) that has access to the relevent model through a role.
+					</details>
+				<details><summary>A look or user-defined dashboard (URL like /dashboards/123)</summary>
+					<p>Ensure the user has the access_data, and the see_looks/see_user_dashboards permission, either directly through the SSO Embed URL "permissions" parameter, or through a role through a group assigned via the group_ids parameter.</p> 
+					<p>If the content is in a shared space, use the SSO Embed URL "group_ids" parameter to assign the embed user to a group that has access to that shared space (or move/copy the content to a more appropriate shared space).</p>
+					<p>If the content is in an embed group space, make sure the SSO Embed URL has the right "external_group_id"</p>
+					<p>(For all tiles to also be accessible, relevant models will also need to be permissioned, either directly or through groups)</p> 
+					</details>
+				</details>
+			<details><summary>The embed path request results in a 200, or redirects to one that does, and the content renders, but with errors</summary>
+				<details><summary>Firefox hidden iframe bug?</summary>
+					<p>WIP</p>
+					</details>
+				<details><summary>Some tiles are missing? => Model permissions</summary>
+					<p>WIP</p>
+					</details>
+				<details><summary>Elements are unexpectedly missing? => Someone set their color to white?</summary>
+					<p>Check the colors defined in the dashboard's embed settings</p>
+					</details>
+				</details>
+			</details>
+		</details>
+	<details><summary>The iframe is loading fine, but cross-frame events aren't working as desired</summary>
+		<p>Things to check:</p>
+		<ul>
+			<li>Have you whitelisted the parent domain at /admin/embed
+			<li>Is the scheme/protocol of the parent page HTTPS?
+			<li>Is the scheme/protocol of the Looker application HTTPS?
+			<li>Are you passing the origin of the parent page as the "embed_domain" parameter on the (URL encoded) embed path? (Not the SSO Embed URL)
+		</ul>
+	</details>
+</body>
+</html>

@@ -39,6 +39,7 @@ code {white-space: pre-line;}
 					<ul>
 					<li> A content security policy header on the parent or ancestor page that may be blocking the request, such as <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-src">Content-Security-Policy: frame-src</a></li>
 					<li> Browser extensions that may be blocking the requests</li>
+					<li> Is it possible the client application code is not actually embedding the URL? Try embedding it yourself by adding an &lt;iframe src="..."&gt;&lt;/iframe&gt; element yourself in the DOM/Inspect tab of the developer tools.</li> 
 					</ul>
 				</details>
 			</details>
@@ -61,7 +62,8 @@ code {white-space: pre-line;}
 						var url = ""
 						if (!url.split("?")[1]){console.error("No querystring!")}
 						else{url.split("?")[1].split("&amp;").map(pair=>pair.split("=")).map(([key,value])=>[key,caught(decodeURIComponent)(value)]).map(([key,value])=>[key,(value.message || {signature:1}[key]) ? value : caught(JSON.parse)(value)])}
-						function caught(fn){return x=>{try{return fn(x)}catch(e){return e}}} </code>
+						function caught(fn){return x=>{try{return fn(x)}catch(e){return e}}}
+						</code>
 					</details>
 				</details>
 			<details><summary>Embed URI is not valid: 'nonce' param already used this hour: '...'</summary>

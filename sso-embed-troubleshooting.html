@@ -121,10 +121,10 @@ code {white-space: pre-line;}
 				</details>
 			<details><summary>The embed path request either results in a 200 with HTTP Response header of "X-Frame-Options: SAMEORIGIN", or redirects to one that does</summary>
 				<p>What is the URL pattern for this request?</p>
-				<details><summary>`/dashboards/*` , `/looks/*` , or `/explore/*`</summary>
+				<details><summary>`/dashboards/*` , `/looks/*` , `/explore/*` , or `/query/*`</summary>
 					<p>`/embed` should be pre-pended to this path to make it an embeddable request.</p>
 					</details>
-				<details><summary>`/embed/dashboards/*` , `/embed/looks/*` , or `/embed/explore/*`</summary>
+				<details><summary>`/embed/dashboards/*` , `/embed/looks/*` , `/embed/explore/*` , or `/embed/query/*`</summary>
 					<p>Looker allows embedding these paths, and so it does not set a prohibitive X-Frame-Options HTTP response header for these requests. Customer-hosted configurations may set up proxies in front of Looker which add these by default. Check that this is not the case.</p>
 					</details>
 				<details><summary>None of the above</summary>

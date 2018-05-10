@@ -134,8 +134,12 @@ code {white-space: pre-line;}
 			<details><summary>The embed path request results in a 40... response (All these still need to be confirmed...)</summary>
 				<p>This is a content/user permissions issue. What content are you embedding?</p>
 				<details><summary>An explore or LookML dashboard (URL like /dashboards/model::dashboard_name)</summary>
-					<p>Ensure the user has the access_data, and the explore/see_lookml_dashboards permission, either directly through the SSO Embed URL "permissions" parameter, or through a role through a group assigned via the group_ids parameter.</p>
-					<p>Either directly assign the relevant model in the SSO Embed URL "models" parameter, or assign a group (via the "group_ids" parameter) that has access to the relevent model through a role.
+					<ul>
+					<li>Does the user have the access_data permission (in the SSO Embed permissions or via a group_id)</li>
+					<li>Does the user have the explore/see_lookml_dashboards permission, as appropriate for the content type  (in the SSO Embed permissions or via a group_id)</li>
+					<li>Does the user have access to the relevant model  (in the SSO Embed modelset or via a group_id)</li>
+					<li>Does the relevant model exist <i>in production</i> (and not just in your dev mode)</li>
+					</ul>
 					</details>
 				<details><summary>A look or user-defined dashboard (URL like /dashboards/123)</summary>
 					<p>Ensure the user has the access_data, and the see_looks/see_user_dashboards permission, either directly through the SSO Embed URL "permissions" parameter, or through a role through a group assigned via the group_ids parameter.</p> 

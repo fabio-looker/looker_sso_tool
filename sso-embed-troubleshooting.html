@@ -160,11 +160,12 @@ code {white-space: pre-line;}
 					</details>
 				</details>
 			</details>
-		<details><summary>The request for the SSO Embed URL (like /login/embed/...) results in a 502</summary>
+		<details><summary>The request for the SSO Embed URL (like /login/embed/...) results in a 5xx</summary>
 			<p>Check the possible causes below, and if it's not one of these, please file a bug!<p>
 			<ul>
 			<li>Is the <a class="muted" href="https://tools.ietf.org/html/rfc3986#section-3">path</a> part of the URL > 2048 bytes? [<a href="https://github.com/puma/puma/issues/757">Puma limitation</a>]</li>
 			<li>Is the <a class="muted" href="https://tools.ietf.org/html/rfc3986#section-3">query</a> part of the URL > 10 * 1024 bytes? [<a href="https://github.com/puma/puma/issues/404">Puma limitation</a>]</li>
+			<li>Is there a mismatch between the type of any user attribute (as defined at /admin/user_attributes) and as provided in the querystring argument?</li>
 			</ul>
 			</details>
 		</details>

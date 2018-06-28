@@ -91,6 +91,10 @@ code {white-space: pre-line;}
 				<p>First, of course, check to make your URL has force_logout_login parameter</p>
 				<p>If your URL does seem to have the force_logout_login parameter, ensure you haven't accidentally encoded or skipped the "?" to actually start your querystring. It can get confusing since the embed path has querystring parameters of its own!</p>
 				</details>
+			<details><summary>This request includes invalid params: ["embed_domain"]</summary>
+				<p>You are attempting to set the embed_domain in the wrong place.</p>
+				<p>The embed_domain is expected to be a parameter on your embed_path (which gets URL encoded), and NOT on the overall SSO Embed Authentication URL.</p>
+				</details>
 			<details><summary>Other errors...</summary>
 					<p>The remainder of errors reported by the Embed URI Validator generally tell you what you need to fix.</p>
 				</details>

@@ -97,7 +97,8 @@ code {white-space: pre-line;}
 				</details>
 			<details><summary> Embed URI is not valid: Invalid host: foo.com  (Use bar.com instead)</summary>
 				<p>The hostname (bar.com) in the Host header of the HTTP request received by the Looker instance does not match the hostname (foo.com) in the signature (and in the hostname in the test URI sent to the Embed URI Validator)</p>
-				<p>Have you configured a proxy or load balancer in front of Looker which is dropping or rewriting the Host header in the forwarded request? The best solution is to configure the proxy to forwards the request with the same Host header.</p>
+				<p>First, if you have multiple domain names that resolve to your instance, make sure you are accessing the Embed URI Validator via the one that is used in the SSO Embed Request. (I.e., test from https://foo.com/admin/embed , even if you normally administer the instance via bar.com)</p>
+				<p>Then, if the error remains the same, check whether you have configured a proxy or load balancer in front of Looker which is dropping or rewriting the Host header in the forwarded request. If so, the best solution is to reconfigure the proxy to forward the request with the same Host header.</p>
 				</details>
 			<details><summary>Other errors...</summary>
 					<p>The remainder of errors reported by the Embed URI Validator generally tell you what you need to fix.</p>

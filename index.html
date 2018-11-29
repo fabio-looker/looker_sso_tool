@@ -66,31 +66,35 @@
 			</div>
 		</form>
 	</div>
-	<div style="flex-grow:1;min-width:480px;margin:0 25px">
-		<h5>Tips</h5>
-		<ul style="font-size:0.8em; font-family:serif; color:#333;">
-			<li> This is a static HTML file and can be used locally.
-				<span style="color:#C33;font-weight:bold;display:none" id="origin-warning">
-					If you use it from a shared domain (e.g. rawgit.com), other scripts on that domain may have access to data you enter here, including your embed secret :(  
-				 	You can use the domain <a href="https://fabio-looker.github.io/looker_sso_tool/">fabio-looker.github.io</a> instead.<span></li>
-			<li> This is for demo/understanding only. You should <i>never</i> make your embed secret available to a user's browser!</li>
-			<li> Check the [Properties] button for additional parameters you can configure</li>
-			<li> If you want to use the Embed URI Validator in Looker, embedding here will consume the nonce and cause the URL to be invalid. Uncheck the "Embed" checkbox at the bottom to not embed after building the URL.</li>
-			<li> Links:
-				<nobr>[<a href="https://docs.looker.com/reference/embedding/sso-embed">Official SSO Embed docs</a>]</nobr>
-				<nobr>[<a href="https://github.com/looker/looker_embed_sso_examples">Examples in various server-side languages</a>]</nobr>
-				<nobr>[<a href="https://github.com/fabio-looker/looker_sso_tool/issues">Report an issue with this page</a>]</nobr>
-				<nobr>[<a href="sso-embed-troubleshooting.html">Troubleshooting guide (WIP)</a>]</nobr>
-			</li>
-		</ul>
-		<h5>Shareable form state</h5>
-		<input type="text" style="width:100%;" readonly="readonly" id="share-state" />
-		<h5>Built Embed URL</h5>
-		<textarea style="width:100%;height:12em" readonly="readonly" id="url-display"></textarea>
-		<h5>Embed Preview</h5>
-		<div style="position:relative;top:0;left:0;width:100%">
+    <div style="flex-grow:1;min-width:480px;margin:0 25px">
+        <div id="top-info">
+    		<h5>Tips</h5>
+            <ul style="font-size:0.8em; font-family:serif; color:#333;">
+                <li> This is a static HTML file and can be used locally.
+                    <span style="color:#C33;font-weight:bold;display:none" id="origin-warning">
+                        If you use it from a shared domain (e.g. rawgit.com), other scripts on that domain may have access to data you enter here, including your embed secret :(  
+                        You can use the domain <a href="https://fabio-looker.github.io/looker_sso_tool/">fabio-looker.github.io</a> instead.<span></li>
+                <li> This is for demo/understanding only. You should <i>never</i> make your embed secret available to a user's browser!</li>
+                <li> Check the [Properties] button for additional parameters you can configure</li>
+                <li> If you want to use the Embed URI Validator in Looker, embedding here will consume the nonce and cause the URL to be invalid. Uncheck the "Embed" checkbox at the bottom to not embed after building the URL.</li>
+                <li> Links:
+                    <nobr>[<a href="https://docs.looker.com/reference/embedding/sso-embed">Official SSO Embed docs</a>]</nobr>
+                    <nobr>[<a href="https://github.com/looker/looker_embed_sso_examples">Examples in various server-side languages</a>]</nobr>
+                    <nobr>[<a href="https://github.com/fabio-looker/looker_sso_tool/issues">Report an issue with this page</a>]</nobr>
+                    <nobr>[<a href="sso-embed-troubleshooting.html">Troubleshooting guide (WIP)</a>]</nobr>
+                </li>
+            </ul>
+
+            <h5>Shareable form state</h5>
+            <input type="text" style="width:100%;" readonly="readonly" id="share-state" />
+            <h5>Built Embed URL</h5>
+            <textarea style="width:100%;height:12em" readonly="readonly" id="url-display"></textarea>
+            <h5>Embed Preview</h5>
+
+        </div>
+		<div style="position:relative;top:20px;left:0;width:100%">
 			<img src="throbber.gif" id="throbber" style="position:absolute;left:-128px;margin-left:50%;top:120px;display:none" /></center>
-			<iframe sandbox="allow-same-origin allow-scripts" id="embed-iframe" style="width:100%;height:560px;box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);" frameBorder="0"></iframe>
+			<iframe sandbox="allow-same-origin allow-scripts" id="embed-iframe" style="width:100%;height:720px;box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);" frameBorder="0"></iframe>
 		</div>
 	</div>
 </div>
@@ -106,6 +110,10 @@ if (
 	}
 
 // The hash sort order is significant. The UI and querystring sort order are just for aesthetics
+
+var latest_url = ""
+var latest_query_params = {}
+
 var definitions=[
 		{sort:{ui:01,qs:00,hash:00}, id:"embed_secret", schema:{required:true}},
 		{sort:{ui:02,qs:00,hash:01}, id:"host", noJSON:true,		schema:{required:true, description:"For example, 'customer.looker.com'"}},
@@ -219,6 +227,7 @@ window.addEventListener("hashchange", function(evt){
 //	})
 
 $("#panel-toggle").click(function(){$("#build-panel").toggle()})
+$("#panel-toggle").click(function(){$("#top-info").toggle()})
 
 $("#url-display").focus(function(){
 		// Highlight all on select
@@ -255,9 +264,25 @@ window.addEventListener("message",function(event){
 		if(data.type=="page:changed"){$("#throbber").hide()}
 		if(data.type=="page:properties:changed" && data.height){
 				console.log("Top-window is updating iframe height based on received event");
-				$("#embed-iframe")[0].style.height = data.height+"px"
-			}
-	})
+                $("#embed-iframe")[0].style.height = data.height+"px"
+                if (data.dashboard) {
+                    latest_query_params = data.dashboard.dashboard_filters
+                    console.log(latest_query_params)
+                }
+            }
+        if(data.type=="drillmenu:click") {
+            let key = data.url.split('::')[0]
+            let value = decodeURI(data.url.split('::')[1])
+            latest_query_params[key] = value
+            console.log(latest_query_params)
+            var my_request = {
+                "type": "dashboard:filters:update",
+                "filters": latest_query_params
+            }
+            $("#embed-iframe")[0].contentWindow.postMessage(JSON.stringify(my_request), ('https://'+$("#embed-iframe")[0].dataset.lastHost)||"");
+            $("#embed-iframe")[0].contentWindow.postMessage(JSON.stringify({type: "dashboard:run"}), ('https://'+$("#embed-iframe")[0].dataset.lastHost)||"");
+        }
+    })
 
 $("#build-form").on("submit",function(evt){
 		evt.preventDefault();

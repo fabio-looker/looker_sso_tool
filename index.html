@@ -290,7 +290,7 @@ $("#build-form").on("submit",function(evt){
 		var errs=editor.validate();
 		var editorValue=editor.getValue()
 		var maskedEditorValue=Object.assign({},editorValue,{embed_secret:undefined})
-		$("#share-state").val("https://fabio-looker.github.io/looker_sso_tool/#o="+rison.encode_uri(maskedEditorValue))
+		$("#share-state").val("https://bryan-at-looker.github.io/looker_sso_tool/#o="+rison.encode_uri(maskedEditorValue))
 		if(errs.length){
 				$("#msg")
 				.text(errs.map(e=>e.path+": "+e.message).join("\n"))

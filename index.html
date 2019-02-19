@@ -40,6 +40,11 @@
 	#json-editor select+p{display:none}
 	#json-editor select:focus+p{display:block}
 </style>
+<script type="text/javascript">
+    document.getElementById('embed-iframe').onload = function() {
+        setTimeout(function(){ }, 3000);
+    }
+</script>
 <script>
 	// Set the JSONEditor CSS theme and icon library globally
 	JSONEditor.defaults.theme = 'foundation5';

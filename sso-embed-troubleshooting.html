@@ -157,6 +157,14 @@ code {white-space: pre-line;}
 					<p>(For all tiles to also be accessible, relevant models will also need to be permissioned, either directly or through groups)</p> 
 					</details>
 				</details>
+			<details><summary>The embed path request results in a 200 or redirects to a request that does, but then the page navigates to /embed which returns a 404 response</summary>
+				<p>The browser is sending a cookie for an expired session</p>
+				<ul>
+				<li>The session_length SSO Embed parameter may be set to a super short value</li>
+				<li>There may be multiple iframes/tabs involved in a race condition to set the session. If you have multiple iframes on the page, make sure that one always loads first, then skip the SSO Embed Authentication step for the subsequent iframes and set them directly to the embed_path</li>
+				<li>The browser may be blocking the setting of third-party cookies (but previously had set them in some other context). This should be confirmed by clearing all cookies/storage and reproducing the more common error that occurs when third party cookies are blocked</li>
+				</ul>
+				</details>
 			<details><summary>The embed path request results in a 200, or redirects to one that does, and the content renders, but with errors</summary>
 				<details><summary>Firefox hidden iframe bug?</summary>
 					<p>WIP</p>

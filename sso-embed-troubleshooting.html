@@ -18,7 +18,7 @@ code {white-space: pre-line;}
 </style>
 <body>
 	<h3>Let's troubleshoot some SSO Embedding.</h3>
-	<p>This is highly work-in-progress. Please <a href="https://github.com/fabio-looker/looker_sso_tool/edit/master/sso-embed-troubleshooting.html"> submit an edit</a>!</p>
+	<p>This is forever a work-in-progress. Please <a href="https://github.com/fabio-looker/looker_sso_tool/edit/master/sso-embed-troubleshooting.html"> submit an edit</a>!</p>
 	<h3>What's going on?</h3>
 	<details><summary>The iframe isn't loading as desired</summary>
 		<p>Open the browser dev tools and take a look at the network tab as an SSO Embed URL is loaded into your iframe. What do you see?</p>
@@ -91,6 +91,15 @@ code {white-space: pre-line;}
 				<p>First, of course, check to make your URL has force_logout_login parameter</p>
 				<p>If your URL does seem to have the force_logout_login parameter, ensure you haven't accidentally encoded or skipped the "?" to actually start your querystring. It can get confusing since the embed path has querystring parameters of its own!</p>
 				</details>
+			<details id="embed-domain-in-the-wrong-place"><summary>This request includes invalid params: ["embed_domain"]</summary>
+				<p>You are attempting to set the embed_domain in the wrong place.</p>
+				<p>The embed_domain is expected to be a parameter on your embed_path (which gets URL encoded), and NOT on the overall SSO Embed Authentication URL.</p>
+				</details>
+			<details><summary> Embed URI is not valid: Invalid host: foo.com  (Use bar.com instead)</summary>
+				<p>The hostname (bar.com) in the Host header of the HTTP request received by the Looker instance does not match the hostname (foo.com) in the signature (and in the hostname in the test URI sent to the Embed URI Validator)</p>
+				<p>First, if you have multiple domain names that resolve to your instance, make sure you are accessing the Embed URI Validator via the one that is used in the SSO Embed Request. (I.e., test from https://foo.com/admin/embed , even if you normally administer the instance via bar.com)</p>
+				<p>Then, if the error remains the same, check whether you have configured a proxy or load balancer in front of Looker which is dropping or rewriting the Host header in the forwarded request. If so, the best solution is to reconfigure the proxy to forward the request with the same Host header.</p>
+				</details>
 			<details><summary>Other errors...</summary>
 					<p>The remainder of errors reported by the Embed URI Validator generally tell you what you need to fix.</p>
 				</details>
@@ -148,6 +157,14 @@ code {white-space: pre-line;}
 					<p>(For all tiles to also be accessible, relevant models will also need to be permissioned, either directly or through groups)</p> 
 					</details>
 				</details>
+			<details><summary>The embed path request results in a 200 or redirects to a request that does, but then the page navigates to /embed which returns a 404 response</summary>
+				<p>The browser is sending a cookie for an expired session</p>
+				<ul>
+				<li>The session_length SSO Embed parameter may be set to a super short value</li>
+				<li>There may be multiple iframes/tabs involved in a race condition to set the session. If you have multiple iframes on the page, make sure that one always loads first, then skip the SSO Embed Authentication step for the subsequent iframes and set them directly to the embed_path</li>
+				<li>The browser may be blocking the setting of third-party cookies (but previously had set them in some other context). This should be confirmed by clearing all cookies/storage and reproducing the more common error that occurs when third party cookies are blocked</li>
+				</ul>
+				</details>
 			<details><summary>The embed path request results in a 200, or redirects to one that does, and the content renders, but with errors</summary>
 				<details><summary>Firefox hidden iframe bug?</summary>
 					<p>WIP</p>
@@ -160,11 +177,12 @@ code {white-space: pre-line;}
 					</details>
 				</details>
 			</details>
-		<details><summary>The request for the SSO Embed URL (like /login/embed/...) results in a 502</summary>
+		<details><summary>The request for the SSO Embed URL (like /login/embed/...) results in a 5xx</summary>
 			<p>Check the possible causes below, and if it's not one of these, please file a bug!<p>
 			<ul>
 			<li>Is the <a class="muted" href="https://tools.ietf.org/html/rfc3986#section-3">path</a> part of the URL > 2048 bytes? [<a href="https://github.com/puma/puma/issues/757">Puma limitation</a>]</li>
 			<li>Is the <a class="muted" href="https://tools.ietf.org/html/rfc3986#section-3">query</a> part of the URL > 10 * 1024 bytes? [<a href="https://github.com/puma/puma/issues/404">Puma limitation</a>]</li>
+			<li>Is there a mismatch between the type of any user attribute (as defined at /admin/user_attributes) and as provided in the querystring argument?</li>
 			</ul>
 			</details>
 		</details>

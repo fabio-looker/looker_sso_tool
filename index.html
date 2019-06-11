@@ -287,6 +287,11 @@ $("#build-form").on("submit",function(evt){
 						d.noJSON?val:JSON.stringify(val)
 					}))
 		var valuesById=definitionValues.reduce(objByOf("d.id","val"),{})
+		if(valuesById.host.match(/:19999^/)){
+				$("#msg")
+				.text("Looker port 19999 is normally used for API requests. In most cases, this is not the right host/port to use.")
+				.show()
+			}
 		console.log("Values:",valuesById)
 		//App specific logic
 		var hashContent=definitionValues

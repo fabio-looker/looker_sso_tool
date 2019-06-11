@@ -47,6 +47,7 @@
 </script>
 </head>
 <body>
+<div id="msg" style="position:fixed;top:0px;display:none;width:100%;z-index:2;text-align:center;white-space:pre-line;color:#666;background-color:#EEC;font-size:12pt;"></div>
 <div id="panel-toggle" style="height:2em;width:2em;position:fixed;left:-1px;bottom:-1px;z-index:20;text-align:center;background-color:#DDD;color:#333;border:1px solid #666;cursor:pointer;">
 	<i class="fa fa-eye-slash"></i>
 </div>
@@ -54,7 +55,6 @@
 	<div id="build-panel" style="flex-grow:1;min-width:480px;margin:0 25px">
 		<form id="build-form">
 			<div id="json-editor"></div>
-			<div id="msg" style="white-space:pre-line;color:#333;background-color:#DDB"></div>
 			<div style="text-align:right">
 				<div style="display:inline-block;vertical-align:top;">
 					<div><label for="embed-flag">Preview</label></div>
@@ -220,6 +220,8 @@ window.addEventListener("hashchange", function(evt){
 
 $("#panel-toggle").click(function(){$("#build-panel").toggle()})
 
+$("#msg").click(function(){$("#msg").hide()})
+
 $("#url-display").focus(function(){
 		// Highlight all on select
 		// Solution per http://stackoverflow.com/a/24589806
@@ -287,9 +289,10 @@ $("#build-form").on("submit",function(evt){
 						d.noJSON?val:JSON.stringify(val)
 					}))
 		var valuesById=definitionValues.reduce(objByOf("d.id","val"),{})
-		if(valuesById.host.match(/:19999^/)){
+		if(valuesById.host.match(/:19999$/)){
+				let msg = "Looker port 19999 is normally used for API requests. In most cases, this is not the right host/port to use."
 				$("#msg")
-				.text("Looker port 19999 is normally used for API requests. In most cases, this is not the right host/port to use.")
+				.text(msg)
 				.show()
 			}
 		console.log("Values:",valuesById)

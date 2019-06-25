@@ -23,6 +23,7 @@ code {white-space: pre-line;}
 	<details><summary>The iframe isn't loading as desired</summary>
 		<p>Open the browser dev tools and take a look at the network tab as an SSO Embed URL is loaded into your iframe. What do you see?</p>
 		<details><summary>There is no request for the SSO Embed URL (like /login/embed/...)</summary>
+			<p>First, double-check that your dev tools' Network tab is not filtered! (e.g. to XHR requests only. Look for an "All" filter if so)</p>
 			<p>Some browsers hide the request from the dev tools when the request is blocked due security options like X-Frame-Options.</p>
 			<p>Generate a new SSO Embed URL, but open it in a new tab with the dev tools open instead of embedding it. </p>
 			<p>Look for an HTTP response header of X-Frame-Options</p>
@@ -108,6 +109,7 @@ code {white-space: pre-line;}
 			<p>The SSO Embed authentication is working. Let's drill in on what happens next!</p>
 			<p>Look at the subsequent request to the URL indicated in the "Location" HTTP response header (your "embed path" URL)</p>
 			<details><summary>There is no request for the embed path URL</summary>
+				<p>First, double-check that your dev tools' Network tab is not filtered! (e.g. to XHR requests only. Look for an "All" filter if so)</p>
 				<p>Some browsers hide the request from the dev tools when the request is blocked due security options like X-Frame-Options.</p>
 				<p>Generate a new SSO Embed URL, but open it in a new tab with the dev tools open instead of embedding it. </p>
 				<p>Look for an HTTP response header of X-Frame-Options</p>

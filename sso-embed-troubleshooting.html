@@ -42,6 +42,9 @@ code {white-space: pre-line;}
 					</ul>
 				</details>
 			</details>
+		<details><summary>The request for the SSO Embed URL (like /login/embed/...) results in a 404</summary>
+			Is your URL encoding of the embed path using lowercases? (like %2fembed%2f... instead of %2Fembed%2F...) Looker doesn't like those, switch to using uppercase.
+			</details>
 		<details><summary>The request for the SSO Embed URL (like /login/embed/...) results in a 303</summary>
 			(...usually to either /login or to the homepage if you have an active session)
 			<img src="https://discourse.looker.com/uploads/default/original/2X/c/c3db585b13ef20a86387bca598ce0410f684a222.png" width="690" height="201" /><br />

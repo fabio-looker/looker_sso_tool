@@ -115,6 +115,7 @@ code {white-space: pre-line;}
 				<p>First, double-check that your dev tools' Network tab is not filtered! (e.g. to XHR requests only. Look for an "All" filter if so)</p>
 				<p>Some browsers hide the request from the dev tools when the request is blocked due security options like X-Frame-Options.</p>
 				<p>Generate a new SSO Embed URL, but open it in a new tab with the dev tools open instead of embedding it. </p>
+				<p>Is the embed path that you are redirected to an `http://` URL instead of `https://`. If so, your instance is probably using the `no-ssl` <a href="https://docs.looker.com/setup-and-management/on-prem-install/looker-startup-options">startup flag</a>, but should be using the `ssl-provided-externally-by` flag instead. (Or, the correct flag is being used, but the provided value is problematic.)</p>
 				<p>Look for an HTTP response header of X-Frame-Options</p>
 				<details><summary>This header is present and set to SAMEORIGIN</summary>
 					<p>Proceed from the last step as though this request/response was there.</p>

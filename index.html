@@ -142,7 +142,7 @@ var definitions=[
 						/* FYI - SSO does not allow all permissions. If you add unsupported permissions, they will fail  */
 					]}}
 			},
-		{sort:{ui:08,qs:22,hash:08}, id:"models",schema:{required:true,pattern:"^[A-Za-z0-9_]+(,\\s*[A-Za-z0-9_]+)*$"},fn:(s)=>s.split(/,\s*/),description:"The name of one more more models to give the user access to. (Comma-delimit multiple models)"},
+		{sort:{ui:08,qs:22,hash:08}, id:"models",schema:{required:true,pattern:"^[-A-Za-z0-9_]+(,\\s*[-A-Za-z0-9_]+)*$"},fn:(s)=>s.split(/,\s*/),description:"The name of one more more models to give the user access to. (Comma-delimit multiple models)"},
 		{sort:{ui:09,qs:23,hash:09}, id:"group_ids",schema:{required:false,pattern:"^$|^[0-9]+(,\\s*[0-9]+)*$",description:"The ID of one or more existing user group within Looker (Comma-delimit multiple groups). Useful for several use cases; notably for granting access to a Shared space that is maintained by your non-embed users."},fn:(s)=>(s==""?[]:s.split(/,\s*/).map(s=>parseInt(s)))},
 		{sort:{ui:10,qs:24,hash:10}, id:"external_group_id",schema:{required:false, description: "Users with the same external_group_id will be able to share content with eachother (assuming they have the appropriate permissions). Use a human-readable string for this. For example 'Acme'"},fn:x=>x||""},
 		{sort:{ui:11,qs:25,hash:11}, id:"user_attributes",schema:{required:false,type:"array",format:"table",items:{type:"object",

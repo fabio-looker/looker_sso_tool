@@ -8,12 +8,17 @@
 **		Hi!
 **
 **		This is a tool, not an example.
-**		DO NOT send your embed secret to users' browsers
+**		DO NOT copy this code into your application.
+**		DO NOT send your embed secret to users' browsers.
 **
 **		Really.
 **
 **		Don't.
 **
+**		(For your own good)
+**
+**		If you need something to copy, we have that too:
+**		https://github.com/looker/looker_embed_sso_examples
 **
 *****************************************************************
 *****************************************************************
@@ -309,6 +314,7 @@ $("#build-form").on("submit",function(evt){
 		var shaObj;
 		var signature=(
 				// Did you read the note at the top of the file???
+				// DO NOT DO THIS IN YOUR APPLICATION
 				shaObj=new jsSHA("SHA-1", "TEXT"),
 				shaObj.setHMACKey(editorValue.embed_secret,"TEXT"),
 				//Based on the format of the secret, you would think Hex...

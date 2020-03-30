@@ -132,7 +132,9 @@ code {white-space: pre-line;}
 					</details>
 				</details>
 			<details><summary>The embed path request results in a 401 response</summary>
-				<p>The browser is likely blocking the setting of third-party cookies. This can be resolved by either changing browser settings to allow third-party cookies, or changing DNS entries to make Looker available under the same domain as the parent page (if Looker hosts the instance, speak to the account manager)</p>
+				<p>The browser is likely blocking the setting of third-party cookies.<p>
+				<p>If the affected browser is primarily Safari, this can be resolved by either changing browser settings to allow third-party cookies, or changing DNS entries to make Looker available under the same domain as the parent page (if Looker hosts the instance, speak to the account manager)</p>
+				<p>If there are issues with Chrome and the instance is self-hosted, check whether the session cookies returned in the SSO Embded URL have a "samesite=none" flag. If not, this could be caused by incorrectly runningthe instance with the `no-ssl` startup flag )prefer `ssl-provided-externally-by` instead). Alternately, a proxy/load balancer could also be removing the samesite flag.</p>
 				</details>
 			<details><summary>The embed path request either results in a 200 with HTTP Response header of "X-Frame-Options: SAMEORIGIN", or redirects to one that does</summary>
 				<p>What is the URL pattern for this request?</p>

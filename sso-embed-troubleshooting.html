@@ -45,8 +45,8 @@ code {white-space: pre-line;}
 		<details><summary>The request for the SSO Embed URL (like /login/embed/...) results in a 404</summary>
 			Is your URL encoding of the embed path using lowercases? (like %2fembed%2f... instead of %2Fembed%2F...) Looker doesn't like those, switch to using uppercase.
 			</details>
-		<details><summary>The request for the SSO Embed URL (like /login/embed/...) results in a 303</summary>
-			(...usually to either /login or to the homepage if you have an active session)
+		<details><summary>The request for the SSO Embed URL (like /login/embed/...) results in a 3xx redirect to Location: of either /login or the homepage</summary>
+			(Redirects to /login are most common, but the homepage will be used if you have an active session. Keep in mind that the homepage can be customized based on administrative settings.)
 			<img src="https://discourse.looker.com/uploads/default/original/2X/c/c3db585b13ef20a86387bca598ce0410f684a222.png" width="690" height="201" /><br />
 			<p>The SSO Embed authentication is not working. Generate a <b>new</b> SSO Embed URL and enter it into the Embed URI Validator at /admin/embed</p>
 			<details><summary>The Embed URI Validator is not present</summary>
@@ -108,7 +108,7 @@ code {white-space: pre-line;}
 					<p>The remainder of errors reported by the Embed URI Validator generally tell you what you need to fix.</p>
 				</details>
 			</details>
-		<details><summary>The request for the SSO Embed URL (like /login/embed/...) results in a 302 to your "embed path"</summary>
+		<details><summary>The request for the SSO Embed URL (like /login/embed/...) results in a 3xx redirect to the Location of your "embed path"</summary>
 			<p>The SSO Embed authentication is working. Let's drill in on what happens next!</p>
 			<p>Look at the subsequent request to the URL indicated in the "Location" HTTP response header (your "embed path" URL)</p>
 			<details><summary>There is no request for the embed path URL</summary>

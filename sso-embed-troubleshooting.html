@@ -54,6 +54,7 @@ code {white-space: pre-line;}
 				</details>
 			<details><summary>Embed URI is valid</summary>
 				<p>Hmm, the earlier request should have worked :-/</p>
+				<p>If the error is known to be intermittent: You may be skipping the URL encoding step after you base64 encode your signature. If so, you would occasionally see <code>+</code> characters in your URL instead of <code>%2B</code> (or spaces in your signature if you are looking at them from the Looker logs). Double-check your URL generation code to ensure you are applying URL encoding to your already base64-encoded signature.</p>
 				</details>
 			<details><summary>Uh oh, something went wrong!</summary>
 				<p>In addition to adjusting your URL to this situation, <b>please file a bug</b> with chat support for this, as seeing this error indicates a need to enhance the Embed URI Validator.</p>

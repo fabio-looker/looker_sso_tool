@@ -82,10 +82,10 @@
 			<li> Check the [Properties] button for additional parameters you can configure</li>
 			<li> If you want to use the Embed URI Validator in Looker, embedding here will consume the nonce and cause the URL to be invalid. Uncheck the "Preview" checkbox at the bottom to not embed after building the URL.</li>
 			<li> Links:
-				<nobr>[<a href="https://docs.looker.com/reference/embedding/sso-embed">Official SSO Embed docs</a>]</nobr>
+				<nobr>[<a href="https://cloud.google.com/looker/docs/signed-embedding">Official Signed Embed docs</a>]</nobr>
 				<nobr>[<a href="https://github.com/looker/looker_embed_sso_examples">Examples in various server-side languages</a>]</nobr>
 				<nobr>[<a href="https://github.com/fabio-looker/looker_sso_tool/issues">Report an issue with this page</a>]</nobr>
-				<nobr>[<a href="sso-embed-troubleshooting.html">Troubleshooting guide (WIP)</a>]</nobr>
+				<nobr>[<a href="signed-embed-troubleshooting.html">Troubleshooting guide (WIP)</a>]</nobr>
 			</li>
 		</ul>
 		<h5>Shareable form state</h5>
@@ -118,9 +118,9 @@ var definitions=[
 				fn:(path=>"/login/embed/"+encodeURIComponent(path))
 			},
 		{sort:{ui:98,qs:11,hash:03}, id:"nonce",schema:{required:false, description:"Any unique value. Once used to embed, cannot be reused for another embed."},fn:(x=>x||nonce(16))},
-		{sort:{ui:99,qs:12,hash:04}, id:"time",schema:{required:false, description:"Epoch timestamp. The embed URL will contain this time incorporated into the signature. Looker will only accept the URL for 5 minutes after this timestamp (to prevent SSO Embed URLs being stored for later use)"},fn:(x=>parseInt(x)||parseInt(Date.now()/1000))}, //Left it as a string for now because I'm lazy and didn't want to confirm how JSONEditor would treat a blank input... 
+		{sort:{ui:99,qs:12,hash:04}, id:"time",schema:{required:false, description:"Epoch timestamp. The embed URL will contain this time incorporated into the signature. Looker will only accept the URL for 5 minutes after this timestamp (to prevent Signed Embed URLs being stored for later use)"},fn:(x=>parseInt(x)||parseInt(Date.now()/1000))}, //Left it as a string for now because I'm lazy and didn't want to confirm how JSONEditor would treat a blank input... 
 		{sort:{ui:90,qs:13,hash:05}, id:"session_length", schema:{required:true,type:"number",minimum:1, description:"Session length in seconds"}},
-		{sort:{ui:04,qs:14,hash:06}, id:"external_user_id", schema:{required:true, description:"Any value that acts an identifier for this user. Subsequent SSO Embed requests pertaining to the same external_user_id will update the associated user"}},
+		{sort:{ui:04,qs:14,hash:06}, id:"external_user_id", schema:{required:true, description:"Any value that acts an identifier for this user. Subsequent Signed Embed requests pertaining to the same external_user_id will update the associated user"}},
 		{sort:{ui:05,qs:31,hash:00}, id:"first_name", schema:{required:true}},
 		{sort:{ui:06,qs:32,hash:00}, id:"last_name", schema:{required:true}},
 		{sort:{ui:07,qs:21,hash:07}, id:"permissions",
@@ -144,7 +144,7 @@ var definitions=[
 						"see_sql", /* v4.10 */
 						"send_to_integration", /* v6.22 */
 						"create_alerts" /* v6.22 */
-						/* FYI - SSO does not allow all permissions. If you add unsupported permissions, they will fail  */
+						/* FYI - Signed Embed does not allow all permissions. If you add unsupported permissions, they will fail  */
 					]}}
 			},
 		{sort:{ui:08,qs:22,hash:08}, id:"models",schema:{required:true,pattern:"^[-A-Za-z0-9_]+(,\\s*[-A-Za-z0-9_]+)*$"},fn:(s)=>s.split(/,\s*/),description:"The name of one more more models to give the user access to. (Comma-delimit multiple models)"},
@@ -198,7 +198,7 @@ var initialValue={
 var editorDef= {
 		schema: {
 				type:"object",
-				title:"SSO Embed Demo",
+				title:"signed Embed Demo",
 				options:{"disable_edit_json":false,"disable_properties":false,"remove_empty_properties":true},
 				properties:definitions
 						.filter(d => d.sort.ui)
@@ -259,7 +259,7 @@ $("#url-display").on("keypress",function(evt){
 //
 window.addEventListener("message",function(event){
 		//In order to receive events from Looker embed frame, you must add a whitelisted embed_domain parameter
-		//to the embed path querystring (not to the SSO querystring).
+		//to the embed path querystring (not to the Signed querystring).
 		//Always validate the origin of messages before you trust their contents!
 		//if(event.origin!=="https://expected-origin/"){return;}
 		//https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage#Security_concerns

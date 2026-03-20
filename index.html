@@ -28,7 +28,7 @@
 <html>
 <head>
 	<title>Signed Embed Constructor</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/2.2.0/sha1.js" async="true" integrity="sha256-+wcjkt38O0q7BEzMX2Ivt0V9AGhx2jhuMtcdp5zHnGM=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/2.2.0/sha.js" async="true" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/json-editor/0.7.28/jsoneditor.min.js" integrity="sha256-51+oMmpgSgS4jV5/DcGKnDHIOL6Jeie2i7ka6sPQVro=" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
@@ -113,6 +113,7 @@ if (
 // The hash sort order is significant. The UI and querystring sort order are just for aesthetics
 var definitions=[
 		{sort:{ui:01,qs:00,hash:00}, id:"embed_secret", schema:{required:true}},
+		{sort:{ui:1.5,qs:00,hash:00}, id:"signature_algorithm", default:"HMAC-SHA1", noJSON:true, schema:{required:true, type:"string", enum:["HMAC-SHA1", "HMAC-SHA256"], default:"HMAC-SHA1"}},
 		{sort:{ui:02,qs:00,hash:01}, id:"host", noJSON:true,		schema:{required:true, description:"For example, 'customer.looker.com'"}},
 		{sort:{ui:03,qs:00,hash:02}, id:"embed_path", noJSON:true,	schema:{required:true, description:"Should start with '/embed/'. Add any querystring parameters for filtering or embed_domain here."}, 
 				fn:(path=>"/login/embed/"+encodeURIComponent(path))
@@ -324,7 +325,7 @@ $("#build-form").on("submit",function(evt){
 		var signature=(
 				// Did you read the note at the top of the file???
 				// DO NOT DO THIS IN YOUR APPLICATION
-				shaObj=new jsSHA("SHA-1", "TEXT"),
+				shaObj=new jsSHA(valuesById.signature_algorithm === "HMAC-SHA256" ? "SHA-256" : "SHA-1", "TEXT"),
 				shaObj.setHMACKey(editorValue.embed_secret,"TEXT"),
 				//Based on the format of the secret, you would think Hex...
 				shaObj.update(hashContent),
